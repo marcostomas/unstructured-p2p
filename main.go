@@ -37,33 +37,33 @@ func lerArquivo(nomeArquivo string) []byte {
 	return conteudo
 }
 
+func verificaArgs(args []string) (int, bool) {
+	lenArgs := len(args)
+
+	if lenArgs > 0 || lenArgs < 5 {
+		return lenArgs, true
+	}
+
+	fmt.Println("Número de argumentos inválido........ >:\n" +
+		"Formato: <endereco>:<porta> [vizinhos.txt [lista_chave_valor.txt]]")
+	return -1, false
+}
+
 func main() {
-	// os.Args fornece acesso aos argumentos de linha de comando
 	args := os.Args
 	var endereco, porta string
-	if len(args) < 1 {
-		fmt.Println("Informe um endereço e porta para criar o socket TCP")
-	} else if len(args) == 2 {
-		fmt.Println("Endereço e porta informados: ", args[1])
-		enderecoCompleto := strings.Split(args[1], ":")
-		endereco, porta = enderecoCompleto[0], enderecoCompleto[1]
+	nRet, check_args := verificaArgs(args)
 
-	} else if len(args) == 4 {
-		fmt.Println(fmt.Sprintf("Endereço e porta informados: %s \n", args[1]))
+	//Só pra parar de dar warning de unused variable
+	fmt.Println(nRet)
 
-		vizinhosRaw := lerArquivo(args[2])
-		vizinhos := strings.Split(string(vizinhosRaw), "\n")
-
-		fmt.Println("Vizinhos: ", vizinhos)
-
-		paresRaw := lerArquivo(args[3])
-		pares := strings.Split(string(paresRaw), "\n")
-
-		fmt.Println("pares:", pares)
-	} else {
-		fmt.Println("Número de argumentos inválido")
-		return
+	// Não precisa mais por causa do exit
+	if !check_args {
+		os.Exit(1)
 	}
+
+	enderecoCompleto := strings.Split(args[1], ":")
+	endereco, porta = enderecoCompleto[0], enderecoCompleto[1]
 
 	criaSocketTCP(endereco, porta)
 }
