@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 	"UP2P/server"
-	"UP2P/client"
+	// "UP2P/client"
 )
 
 var TTL = 100
@@ -46,6 +46,8 @@ func lerArquivo(nomeArquivo string) []byte {
 func verificaArgs(args []string) (int, bool) {
 	lenArgs := len(args)
 
+	fmt.Println("----------------VerificarArgs")
+
 	if lenArgs > 0 || lenArgs < 5 {
 		fmt.Printf("Argumentos: %s\n", args)
 		return lenArgs, true
@@ -79,14 +81,15 @@ func comunicarVizinhos(vizinhos string) []no {
 		} else if resposta.StatusCode == 200 {
 			var node = new(no)
 			nosVizinhos = append(nosVizinhos, *node)
-		}
+		} 
 		defer resposta.Body.Close()
 	}
 
 	return nosVizinhos
 }
 
-func exibeMenu() int {
+func exibeMenu() {
+
 	fmt.Println("Escolha o comando")
 	fmt.Println("[0] Listar vizinhos")
 	fmt.Println("[1] Hello")
@@ -99,18 +102,38 @@ func exibeMenu() int {
 
 	var numero int
 	_, err := fmt.Scanln(&numero)
+
 	if err != nil {
 		fmt.Println("Erro ao ler o número", err)
-		return -1
-	}
-	fmt.Println("Número lido:", numero)
+	} else {
 
-	return numero
+		switch numero {
+		case 0:
+			fmt.Println("Lista vizinhos")
+		case 1:
+			fmt.Println("Hello")
+		case 2:
+			fmt.Println("SEARCH (flooding)")
+		case 3:
+			fmt.Println("SEARCH (random walk)")
+		case 4:
+			fmt.Println("SEARCH (busca em profundidade)")
+		case 5:
+			fmt.Println("Estatísticas")
+		case 6:
+			fmt.Println("Alterar valor padrão de TTL")
+		case 9:
+			os.Exit(0)
+		}
+	}
+
+	exibeMenu()
 }
 
 func main() {
+
 	args := os.Args
-	nRet, check_args := verificaArgs(args)
+	nRet, check_args  := verificaArgs(args)
 
 	// Não precisa mais por causa do exit
 	if !check_args {
@@ -121,32 +144,12 @@ func main() {
 	endereco, porta := getEnderecoPorta(args[1])
 	criaSocketTCP(endereco, porta)
 
-	server.InitServer()
-	client.InitClient()
-
 	// Envia HELLO para confirmar a existência do vizinho
-	if nRet > 2 {
-		nosVizinhos := comunicarVizinhos(args[2])
+	 if nRet > 2 {
+	 	nosVizinhos := comunicarVizinhos(args[2])
 	}
 
-	comando := exibeMenu()
+	server.InitServer()
 
-	switch comando {
-	case 0:
-		fmt.Println("Listar vizinhos")
-	case 1:
-		fmt.Println("Hello")
-	case 2:
-		fmt.Println("SEARCH (flooding)")
-	case 3:
-		fmt.Println("SEARCH (random walk)")
-	case 4:
-		fmt.Println("SEARCH (busca em profundidade)")
-	case 5:
-		fmt.Println("Estatísticas")
-	case 6:
-		fmt.Println("Alterar valor padrão de TTL")
-	case 9:
-		os.Exit(0)
-	}
+	exibeMenu()
 }

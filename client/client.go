@@ -8,7 +8,7 @@ import (
 
 // Definir funções que o cliente pode executar
 
-func find_all_neighbours() [][]string {
+func ListAllNeighbours() [][]string {
 
 	/* TODO: implementar a busca por todos os vizinhos
 	   Returned values: [][]string => matriz de strings com os vizinhos
@@ -18,7 +18,12 @@ func find_all_neighbours() [][]string {
 
 }
 
-func search_flooding(_key_ string) (_status_ bool, _value_ int) {
+func Hello() {
+
+}
+
+func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
+
 	/* TODO: implementar a requisição da chave para todos os vizinhos
 	   Returned values: _status_ => se achou o não a chave
 						_key_ => valor da chave, -1 se não for encontrada
@@ -28,12 +33,26 @@ func search_flooding(_key_ string) (_status_ bool, _value_ int) {
 
 }
 
-func InitClient() {
+func SearchRandomWalk(_key_ string) (_status_ bool, _value_ int) {
+
+
+	return true, 1
+}
+
+func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
+
+
+	return true, 1
+}
+
+func ConsumeEndpoint() {
 
 	resp, err := http.Get("http://localhost:8090/hello")
+
 	if err != nil {
 		panic(err)
 	}
+
 	defer resp.Body.Close()
 
 	fmt.Println("Response status:", resp.Status)

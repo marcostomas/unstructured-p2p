@@ -5,12 +5,12 @@ import (
 	"net/http"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
+func Hello(w http.ResponseWriter, req *http.Request) {
 
 	fmt.Fprintf(w, "helloer\n")
 }
 
-func headers(w http.ResponseWriter, req *http.Request) {
+func SearchFlooding(w http.ResponseWriter, req *http.Request) {
 
 	for name, headers := range req.Header {
 		for _, h := range headers {
@@ -19,10 +19,20 @@ func headers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {
+
+}
+
+func SearchInDepth(w http.ResponseWriter, req *http.Request) {
+	
+}
+
 func InitServer() {
 
-	http.HandleFunc("/hello", hello)
-	http.HandleFunc("/headers", headers)
+	http.HandleFunc("/hello", Hello)
+	http.HandleFunc("/SearchFlooding", SearchFlooding)
+	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
+	http.HandleFunc("/SearchInDepth", SearchInDepth)
 
 	http.ListenAndServe(":8090", nil)
 }
