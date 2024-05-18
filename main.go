@@ -130,4 +130,23 @@ func main() {
 	}
 
 	comando := exibeMenu()
+
+	switch comando {
+	case 0:
+		fmt.Println("Listar vizinhos")
+	case 1:
+		fmt.Println("Hello")
+	case 2:
+		fmt.Println("SEARCH (flooding)")
+	case 3:
+		fmt.Println("SEARCH (random walk)")
+	case 4:
+		fmt.Println("SEARCH (busca em profundidade)")
+	case 5:
+		fmt.Println("Estatísticas")
+	case 6:
+		fmt.Println("Alterar valor padrão de TTL")
+	case 9:
+		os.Exit(0)
+	}
 }
