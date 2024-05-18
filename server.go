@@ -6,23 +6,21 @@ import (
 )
 
 func hello(w http.ResponseWriter, req *http.Request) {
-
-	fmt.Fprintf(w, "helloer\n")
+	fmt.Fprintf(w, "hello\n")
 }
 
-func headers(w http.ResponseWriter, req *http.Request) {
+// func headers(w http.ResponseWriter, req *http.Request) {
 
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
-	}
-}
+// 	for name, headers := range req.Header {
+// 		for _, h := range headers {
+// 			fmt.Fprintf(w, "%v: %v\n", name, h)
+// 		}
+// 	}
+// }
 
-func initServer() {
+func initServer(porta string) {
 
 	http.HandleFunc("/hello", hello)
-	http.HandleFunc("/headers", headers)
 
-	http.ListenAndServe(":8090", nil)
+	http.ListenAndServe(":"+porta, nil)
 }

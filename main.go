@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -42,6 +43,7 @@ func verificaArgs(args []string) (int, bool) {
 	lenArgs := len(args)
 
 	if lenArgs > 0 || lenArgs < 5 {
+		fmt.Printf("Argumentos: %s\n", args)
 		return lenArgs, true
 	}
 
@@ -58,19 +60,45 @@ func getEnderecoPorta(url string) (string, string) {
 	return endereco, porta
 }
 
+func comunicarVizinhos(vizinhos string) []no {
+	vizinhosArr := strings.Split(vizinhos, " ")
+	nosVizinhos := make([]no, len(vizinhosArr))
+
+	// range retorna indice, valor. Com "_" estou ignorando o índice no caso abaixo
+	for _, vizinho := range vizinhosArr {
+		fmt.Println("Tentando adicionar vizinho " + vizinho + ".")
+
+		resposta, err := http.Get(vizinho + "/hello")
+		if err != nil {
+			fmt.Println("Erro ao enviar a requisição:", err)
+			continue
+		} else if resposta.StatusCode == 200 {
+			var node = new(no)
+			nosVizinhos = append(nosVizinhos, *node)
+		}
+		defer resposta.Body.Close()
+	}
+
+	return nosVizinhos
+}
+
 func main() {
 	args := os.Args
 	nRet, check_args := verificaArgs(args)
-
-	//Só pra parar de dar warning de unused variable
-	fmt.Println(nRet)
+	var nosVizinhos []no
 
 	// Não precisa mais por causa do exit
 	if !check_args {
 		os.Exit(1)
 	}
 
+	// Cria socket TCP4 com endereço e porta fornecidos
 	endereco, porta := getEnderecoPorta(args[1])
 	criaSocketTCP(endereco, porta)
+
+	// Envia HELLO para confirmar a existência do vizinho
+	if nRet > 2 {
+		nosVizinhos = comunicarVizinhos(args[2])
+	}
 
 }
