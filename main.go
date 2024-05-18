@@ -6,6 +6,8 @@ import (
 	"net"
 	"os"
 	"strings"
+	"UP2P/server"
+	"UP2P/client"
 )
 
 func criaSocketTCP(endereco, porta string) {
@@ -66,4 +68,8 @@ func main() {
 	endereco, porta = enderecoCompleto[0], enderecoCompleto[1]
 
 	criaSocketTCP(endereco, porta)
+
+	server.InitServer()
+	client.InitClient()
+
 }

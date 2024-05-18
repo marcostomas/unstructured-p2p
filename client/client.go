@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"bufio"
@@ -28,7 +28,7 @@ func search_flooding(_key_ string) (_status_ bool, _value_ int) {
 
 }
 
-func main() {
+func InitClient() {
 
 	resp, err := http.Get("http://localhost:8090/hello")
 	if err != nil {
