@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var TTL = 100
+
 func criaSocketTCP(endereco, porta string) {
 	// Cria um socket TCP
 	ln, err := net.Listen("tcp4", endereco+":"+porta)
@@ -82,10 +84,31 @@ func comunicarVizinhos(vizinhos string) []no {
 	return nosVizinhos
 }
 
+func exibeMenu() int {
+	fmt.Println("Escolha o comando")
+	fmt.Println("[0] Listar vizinhos")
+	fmt.Println("[1] Hello")
+	fmt.Println("[2] SEARCH (flooding)")
+	fmt.Println("[3] SEARCH (random walk)")
+	fmt.Println("[4] SEARCH (busca em profundidade)")
+	fmt.Println("[5] Estatísticas")
+	fmt.Println("[6] Alterar valor padrão de TTL")
+	fmt.Println("[9] Sair")
+
+	var numero int
+	_, err := fmt.Scanln(&numero)
+	if err != nil {
+		fmt.Println("Erro ao ler o número", err)
+		return -1
+	}
+	fmt.Println("Número lido:", numero)
+
+	return numero
+}
+
 func main() {
 	args := os.Args
 	nRet, check_args := verificaArgs(args)
-	var nosVizinhos []no
 
 	// Não precisa mais por causa do exit
 	if !check_args {
@@ -98,7 +121,8 @@ func main() {
 
 	// Envia HELLO para confirmar a existência do vizinho
 	if nRet > 2 {
-		nosVizinhos = comunicarVizinhos(args[2])
+		nosVizinhos := comunicarVizinhos(args[2])
 	}
 
+	comando := exibeMenu()
 }
