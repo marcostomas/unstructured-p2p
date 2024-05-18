@@ -1,14 +1,14 @@
 package main
 
 import (
+	"UP2P/client"
+	"UP2P/server"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"strings"
-	"UP2P/server"
-	"UP2P/client"
 )
 
 var TTL = 100
@@ -130,7 +130,6 @@ func main() {
 	}
 
 	comando := exibeMenu()
-
 	switch comando {
 	case 0:
 		fmt.Println("Listar vizinhos")
