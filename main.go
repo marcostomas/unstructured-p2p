@@ -11,6 +11,7 @@ import (
 func criaSocketTCP(endereco, porta string) {
 	// Cria um socket TCP
 	ln, err := net.Listen("tcp4", endereco+":"+porta)
+	fmt.Println("Escutando em", endereco+":"+porta)
 	if err != nil {
 		fmt.Println("Erro ao criar socket TCP")
 		return
@@ -46,12 +47,19 @@ func verificaArgs(args []string) (int, bool) {
 
 	fmt.Println("Número de argumentos inválido........ >:\n" +
 		"Formato: <endereco>:<porta> [vizinhos.txt [lista_chave_valor.txt]]")
-	return -1, false
+	return lenArgs, false
+}
+
+func getEnderecoPorta(url string) (string, string) {
+
+	enderecoCompleto := strings.Split(url, ":")
+	endereco, porta := enderecoCompleto[0], enderecoCompleto[1]
+
+	return endereco, porta
 }
 
 func main() {
 	args := os.Args
-	var endereco, porta string
 	nRet, check_args := verificaArgs(args)
 
 	//Só pra parar de dar warning de unused variable
@@ -62,8 +70,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	enderecoCompleto := strings.Split(args[1], ":")
-	endereco, porta = enderecoCompleto[0], enderecoCompleto[1]
-
+	endereco, porta := getEnderecoPorta(args[1])
 	criaSocketTCP(endereco, porta)
+
 }

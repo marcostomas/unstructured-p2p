@@ -1,5 +1,6 @@
 package main
 
 type no struct {
-	pares map[string]string
+	pares_chave_valor map[string]string
+	vizinhos          []string
 }
