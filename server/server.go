@@ -19,10 +19,10 @@ func headers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func InitServer() {
+func InitServer(endercco string, porta string) {
 
 	http.HandleFunc("/hello", hello)
 	http.HandleFunc("/headers", headers)
 
-	http.ListenAndServe(":8090", nil)
+	http.ListenAndServe(endercco+":"+porta, nil)
 }

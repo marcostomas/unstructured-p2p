@@ -28,9 +28,9 @@ func search_flooding(_key_ string) (_status_ bool, _value_ int) {
 
 }
 
-func InitClient() {
+func InitClient(endereco string, porta string) {
 
-	resp, err := http.Get("http://localhost:8090/hello")
+	resp, err := http.Get("http://" + endereco + ":" + porta + "/hello")
 	if err != nil {
 		panic(err)
 	}
