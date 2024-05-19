@@ -8,7 +8,7 @@ import (
 
 // Definir funções que o cliente pode executar
 
-func find_all_neighbours() [][]string {
+func ListAllNeighbours() [][]string {
 
 	/* TODO: implementar a busca por todos os vizinhos
 	   Returned values: [][]string => matriz de strings com os vizinhos
@@ -18,28 +18,49 @@ func find_all_neighbours() [][]string {
 
 }
 
-func search_flooding(_key_ string) (_status_ bool, _value_ int) {
+func Hello() {
+
+	consumeEndpoint("http://localhost:10000/hello")
+
+}
+
+func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
+
 	/* TODO: implementar a requisição da chave para todos os vizinhos
 	   Returned values: _status_ => se achou o não a chave
 						_key_ => valor da chave, -1 se não for encontrada
 	*/
 
+	fmt.Println("Mandando um searchFlooding")
+
 	return true, 1
 
 }
 
-func InitClient(endereco string, porta string) {
+func SearchRandomWalk(_key_ string) (_status_ bool, _value_ int) {
 
-	resp, err := http.Get("http://" + endereco + ":" + porta + "/hello")
+	return true, 1
+}
+
+func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
+
+	return true, 1
+}
+
+func consumeEndpoint(url string) {
+
+	resp, err := http.Get(url)
+
 	if err != nil {
 		panic(err)
 	}
+
 	defer resp.Body.Close()
 
 	fmt.Println("Response status:", resp.Status)
 
 	scanner := bufio.NewScanner(resp.Body)
-	for i := 0; scanner.Scan() && i < 5; i++ {
+	for i := 0; scanner.Scan(); i++ {
 		fmt.Println(scanner.Text())
 	}
 

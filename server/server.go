@@ -5,12 +5,15 @@ import (
 	"net/http"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
+func Hello(w http.ResponseWriter, req *http.Request) {
 
-	fmt.Fprintf(w, "helloer\n")
+	fmt.Println("Enviando resposta para o cliente!")
+
+	fmt.Fprintf(w, "Hello from Server!\n")
+
 }
 
-func headers(w http.ResponseWriter, req *http.Request) {
+func SearchFlooding(w http.ResponseWriter, req *http.Request) {
 
 	for name, headers := range req.Header {
 		for _, h := range headers {
@@ -19,10 +22,21 @@ func headers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func InitServer(endercco string, porta string) {
+func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {
 
-	http.HandleFunc("/hello", hello)
-	http.HandleFunc("/headers", headers)
+}
 
-	http.ListenAndServe(endercco+":"+porta, nil)
+func SearchInDepth(w http.ResponseWriter, req *http.Request) {
+
+}
+
+func InitServer() {
+
+	http.HandleFunc("/hello", Hello)
+	http.HandleFunc("/SearchFlooding", SearchFlooding)
+	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
+	http.HandleFunc("/SearchInDepth", SearchInDepth)
+
+	fmt.Println("Escutando na porta 10000")
+	http.ListenAndServe(":10000", nil)
 }
