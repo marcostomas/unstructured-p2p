@@ -1,23 +1,23 @@
 package main
 
 import (
+	"UP2P/client"
+	"UP2P/server"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
-	"UP2P/server"
-	"UP2P/client"
 )
 
 var TTL = 100
 
-func lerArquivo(nomeArquivo string) []byte {
+func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
 	arquivo, err := os.Open(nomeArquivo)
 	if err != nil {
 		fmt.Println("Erro ao abrir o arquivo:", err)
-		return nil
+		return nil, false
 	}
 	defer arquivo.Close()
 
@@ -25,19 +25,21 @@ func lerArquivo(nomeArquivo string) []byte {
 	conteudo, err := ioutil.ReadAll(arquivo)
 	if err != nil {
 		fmt.Println("Erro ao ler o arquivo:", err)
-		return nil
+		return nil, false
 	}
 
-	return conteudo
+	return conteudo, true
 }
 
 func verificaArgs(args []string) (int, bool) {
 	lenArgs := len(args)
 
-	fmt.Println("----------------VerificarArgs")
+	fmt.Println("------------------------------------")
+	fmt.Println("Fazendo verificação da quantidade de argumentos...")
 
 	if lenArgs > 0 || lenArgs < 5 {
-		fmt.Printf("Argumentos: %s\n", args)
+		fmt.Println("Validação OK!")
+		fmt.Printf("Argumentos: %s\n\n", args)
 		return lenArgs, true
 	}
 
@@ -69,7 +71,7 @@ func comunicarVizinhos(vizinhos string) []no {
 		} else if resposta.StatusCode == 200 {
 			var node = new(no)
 			nosVizinhos = append(nosVizinhos, *node)
-		} 
+		}
 		defer resposta.Body.Close()
 	}
 
@@ -120,23 +122,52 @@ func exibeMenu() {
 func main() {
 
 	args := os.Args
-	_, check_args  := verificaArgs(args)
+	nArgs, check_args := verificaArgs(args)
 
 	// Não precisa mais por causa do exit
 	if !check_args {
 		os.Exit(1)
 	}
 
-	// Cria socket TCP4 com endereço e porta fornecidos
-	// endereco, porta := getEnderecoPorta(args[1])
+	fmt.Println("------------------------------------")
+	fmt.Println("Tentando extrair os dados de " + args[2] + "...")
+	vizinhos, status := lerArquivo(args[2])
+	if !status {
+		panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
+	} else {
+		fmt.Println("Leitura do arquivo bem sucedida!")
+	}
+
+	fmt.Println("------------------------------------")
+	fmt.Println("Tentando extrair os dados de " + args[3] + "...")
+	paresChaveValor, status := lerArquivo(args[3])
+	if !status {
+		panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
+	} else {
+		fmt.Println("Leitura do arquivo bem sucedida!")
+	}
+
+	fmt.Println("------------------------------------")
+	fmt.Println("Vizinhos: ")
+	fmt.Println(string(vizinhos) + "\n")
+
+	fmt.Println("------------------------------------")
+	fmt.Println("Pares chave-valor: ")
+	fmt.Println(string(paresChaveValor) + "\n")
+
+	no := newNo(strings.Split(string(paresChaveValor), ";"),
+		strings.Split(string(vizinhos), ";"))
+
+	fmt.Println(no.pares_chave_valor)
+	fmt.Println(no.vizinhos)
 
 	// Envia HELLO para confirmar a existência do vizinho
-	//  if nRet > 2 {
-	//  	nosVizinhos := comunicarVizinhos(args[2])
+	if nArgs > 2 {
+		nosVizinhos := comunicarVizinhos(args[2])
 
-	// 	fmt.Println(nosVizinhos)
+		fmt.Println(nosVizinhos)
 
-	// }
+	}
 
 	go server.InitServer()
 

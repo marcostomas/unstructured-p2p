@@ -20,7 +20,7 @@ func ListAllNeighbours() [][]string {
 
 func Hello() {
 
-	ConsumeEndpoint("http://localhost:10000/hello")
+	consumeEndpoint("http://localhost:10000/hello")
 
 }
 
@@ -31,7 +31,7 @@ func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
 						_key_ => valor da chave, -1 se não for encontrada
 	*/
 
-	fmt.Println("Mandando um searchFlooding");
+	fmt.Println("Mandando um searchFlooding")
 
 	return true, 1
 
@@ -39,17 +39,15 @@ func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
 
 func SearchRandomWalk(_key_ string) (_status_ bool, _value_ int) {
 
-
 	return true, 1
 }
 
 func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
 
-
 	return true, 1
 }
 
-func ConsumeEndpoint(url string) {
+func consumeEndpoint(url string) {
 
 	resp, err := http.Get(url)
 

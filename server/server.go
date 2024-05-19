@@ -7,9 +7,9 @@ import (
 
 func Hello(w http.ResponseWriter, req *http.Request) {
 
-	fmt.Println("Enviando resposta para o cliente!");
+	fmt.Println("Enviando resposta para o cliente!")
 
-	fmt.Fprintf(w, "Hello from Server!\n", )
+	fmt.Fprintf(w, "Hello from Server!\n")
 
 }
 
@@ -27,7 +27,7 @@ func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {
 }
 
 func SearchInDepth(w http.ResponseWriter, req *http.Request) {
-	
+
 }
 
 func InitServer() {
@@ -37,6 +37,6 @@ func InitServer() {
 	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
 	http.HandleFunc("/SearchInDepth", SearchInDepth)
 
-	fmt.Println("Escutando na porta 8091");
-	http.ListenAndServe(":11000", nil)
+	fmt.Println("Escutando na porta 10000")
+	http.ListenAndServe(":10000", nil)
 }
