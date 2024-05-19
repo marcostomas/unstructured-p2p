@@ -1,7 +1,6 @@
 package main
 
 import (
-	"UP2P/client"
 	"UP2P/server"
 	"fmt"
 	"io/ioutil"
@@ -86,7 +85,22 @@ func comunicarVizinhos(vizinhos string) []no {
 	return nosVizinhos
 }
 
-func exibeMenu() int {
+func alterarTTL() {
+	fmt.Println("Digite o novo valor de TTL:")
+	_, err := fmt.Scanln(&TTL)
+	if err != nil {
+		fmt.Println("Erro ao ler o número", err)
+		alterarTTL()
+	}
+	fmt.Println("TTL alterado para:", TTL)
+}
+
+func sair() {
+	fmt.Println("Saindo...")
+	os.Exit(0)
+}
+
+func exibeMenu() {
 	fmt.Println("Escolha o comando")
 	fmt.Println("[0] Listar vizinhos")
 	fmt.Println("[1] Hello")
@@ -105,32 +119,7 @@ func exibeMenu() int {
 	}
 	fmt.Println("Número lido:", numero)
 
-	return numero
-}
-
-func main() {
-	args := os.Args
-	nRet, check_args := verificaArgs(args)
-
-	// Não precisa mais por causa do exit
-	if !check_args {
-		os.Exit(1)
-	}
-
-	// Cria socket TCP4 com endereço e porta fornecidos
-	endereco, porta := getEnderecoPorta(args[1])
-	criaSocketTCP(endereco, porta)
-
-	server.InitServer()
-	client.InitClient()
-
-	// Envia HELLO para confirmar a existência do vizinho
-	if nRet > 2 {
-		nosVizinhos := comunicarVizinhos(args[2])
-	}
-
-	comando := exibeMenu()
-	switch comando {
+	switch numero {
 	case 0:
 		fmt.Println("Listar vizinhos")
 	case 1:
@@ -144,8 +133,32 @@ func main() {
 	case 5:
 		fmt.Println("Estatísticas")
 	case 6:
-		fmt.Println("Alterar valor padrão de TTL")
+		alterarTTL()
 	case 9:
-		os.Exit(0)
+		sair()
 	}
+
+	exibeMenu()
+}
+
+func main() {
+	args := os.Args
+	nRet, check_args := verificaArgs(args)
+
+	// Não precisa mais por causa do exit
+	if !check_args {
+		os.Exit(1)
+	}
+
+	// Cria socket TCP4 com endereço e porta fornecidos
+	endereco, porta := getEnderecoPorta(args[1])
+	// criaSocketTCP(endereco, porta)
+	server.InitServer(endereco, porta)
+
+	// Envia HELLO para confirmar a existência do vizinho
+	if nRet > 2 {
+		nosVizinhos := comunicarVizinhos(args[2])
+	}
+
+	exibeMenu()
 }
