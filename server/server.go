@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
+func HelloE(w http.ResponseWriter, req *http.Request) {
 
 	fmt.Fprintf(w, "helloer\n")
 }
@@ -21,7 +21,7 @@ func headers(w http.ResponseWriter, req *http.Request) {
 
 func InitServer(endercco string, porta string) {
 
-	http.HandleFunc("/hello", hello)
+	http.HandleFunc("/hello", HelloE)
 	http.HandleFunc("/headers", headers)
 
 	http.ListenAndServe(endercco+":"+porta, nil)

@@ -9,8 +9,8 @@
 
 | Feito? | Tarefa                                            | Responsável | Prazo |
 | ------ | ------------------------------------------------- | ----------- | ----- |
-| [ ]    | Inicialização                                     | Marcos      | 19/05 |
-| [ ]    | Menu, controle de comando, alteração de TTL, sair | Marcos      | 19/05 |
+| [X]    | Inicialização                                     | Marcos      | 19/05 |
+| [X]    | Menu, controle de comando, alteração de TTL, sair | Marcos      | 19/05 |
 | [ ]    | Listar vizinhos                                   | Rafael      | 19/05 |
 | [ ]    | Hello                                             | Rafael      | 19/05 |
 | [ ]    | Search (flooding)                                 |             |       |

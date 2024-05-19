@@ -28,6 +28,18 @@ func search_flooding(_key_ string) (_status_ bool, _value_ int) {
 
 }
 
+func bye(uri string) bool {
+	resp, err := http.Get("http://" + uri + "/bye")
+	if err != nil {
+		fmt.Println("Erro ao dizer xau:", err)
+		return false
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("Response status:", resp.Status)
+	return true
+}
+
 func InitClient(endereco string, porta string) {
 
 	resp, err := http.Get("http://" + endereco + ":" + porta + "/hello")
