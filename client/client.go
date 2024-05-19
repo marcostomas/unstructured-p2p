@@ -20,6 +20,8 @@ func ListAllNeighbours() [][]string {
 
 func Hello() {
 
+	ConsumeEndpoint("http://localhost:10000/hello")
+
 }
 
 func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
@@ -28,6 +30,8 @@ func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
 	   Returned values: _status_ => se achou o não a chave
 						_key_ => valor da chave, -1 se não for encontrada
 	*/
+
+	fmt.Println("Mandando um searchFlooding");
 
 	return true, 1
 
@@ -45,9 +49,9 @@ func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
 	return true, 1
 }
 
-func ConsumeEndpoint() {
+func ConsumeEndpoint(url string) {
 
-	resp, err := http.Get("http://localhost:8090/hello")
+	resp, err := http.Get(url)
 
 	if err != nil {
 		panic(err)
@@ -58,7 +62,7 @@ func ConsumeEndpoint() {
 	fmt.Println("Response status:", resp.Status)
 
 	scanner := bufio.NewScanner(resp.Body)
-	for i := 0; scanner.Scan() && i < 5; i++ {
+	for i := 0; scanner.Scan(); i++ {
 		fmt.Println(scanner.Text())
 	}
 

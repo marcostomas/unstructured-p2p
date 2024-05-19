@@ -7,7 +7,10 @@ import (
 
 func Hello(w http.ResponseWriter, req *http.Request) {
 
-	fmt.Fprintf(w, "helloer\n")
+	fmt.Println("Enviando resposta para o cliente!");
+
+	fmt.Fprintf(w, "Hello from Server!\n", )
+
 }
 
 func SearchFlooding(w http.ResponseWriter, req *http.Request) {
@@ -34,5 +37,6 @@ func InitServer() {
 	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
 	http.HandleFunc("/SearchInDepth", SearchInDepth)
 
-	http.ListenAndServe(":8090", nil)
+	fmt.Println("Escutando na porta 8091");
+	http.ListenAndServe(":11000", nil)
 }

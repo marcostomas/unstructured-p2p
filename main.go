@@ -3,26 +3,14 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"os"
 	"strings"
 	"UP2P/server"
-	// "UP2P/client"
+	"UP2P/client"
 )
 
 var TTL = 100
-
-func criaSocketTCP(endereco, porta string) {
-	// Cria um socket TCP
-	ln, err := net.Listen("tcp4", endereco+":"+porta)
-	fmt.Println("Escutando em", endereco+":"+porta)
-	if err != nil {
-		fmt.Println("Erro ao criar socket TCP")
-		return
-	}
-	defer ln.Close()
-}
 
 func lerArquivo(nomeArquivo string) []byte {
 	// Abre o arquivo
@@ -109,9 +97,9 @@ func exibeMenu() {
 
 		switch numero {
 		case 0:
-			fmt.Println("Lista vizinhos")
+			client.SearchFlooding("")
 		case 1:
-			fmt.Println("Hello")
+			client.Hello()
 		case 2:
 			fmt.Println("SEARCH (flooding)")
 		case 3:
@@ -126,14 +114,13 @@ func exibeMenu() {
 			os.Exit(0)
 		}
 	}
-
 	exibeMenu()
 }
 
 func main() {
 
 	args := os.Args
-	nRet, check_args  := verificaArgs(args)
+	_, check_args  := verificaArgs(args)
 
 	// Não precisa mais por causa do exit
 	if !check_args {
@@ -141,15 +128,17 @@ func main() {
 	}
 
 	// Cria socket TCP4 com endereço e porta fornecidos
-	endereco, porta := getEnderecoPorta(args[1])
-	criaSocketTCP(endereco, porta)
+	// endereco, porta := getEnderecoPorta(args[1])
 
 	// Envia HELLO para confirmar a existência do vizinho
-	 if nRet > 2 {
-	 	nosVizinhos := comunicarVizinhos(args[2])
-	}
+	//  if nRet > 2 {
+	//  	nosVizinhos := comunicarVizinhos(args[2])
 
-	server.InitServer()
+	// 	fmt.Println(nosVizinhos)
+
+	// }
+
+	go server.InitServer()
 
 	exibeMenu()
 }
