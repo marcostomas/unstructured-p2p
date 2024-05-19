@@ -20,8 +20,8 @@ type no struct {
 }
 
 func imprimeEstadoNo(noh *no, mensagem string) {
-	fmt.Printf("\n\n\n\n\n\n")
-	fmt.Printf("//////////////////////////Estado do nó - %s///////////////////////////////", mensagem)
+	fmt.Printf("\n\n\n\n")
+	fmt.Printf("////////////////////////// Estado do nó - %s ///////////////////////////////\n", mensagem)
 
 	fmt.Println("Pares chave-valor: ", noh.pares_chave_valor)
 	fmt.Println("Vizinhos: ", noh.vizinhos)
@@ -111,9 +111,9 @@ func alterarTTL() {
 func sair(noh *no) {
 	fmt.Println("Saindo...")
 	// Envia mensagem de saída para todos os vizinhos
-	for _, vizinho := range noh.vizinhos {
-		client.bye(vizinho)
-	}
+	// for _, vizinho := range noh.vizinhos {
+	// 	client.bye(vizinho)
+	// }
 
 	os.Exit(0)
 }
@@ -205,5 +205,5 @@ func main() {
 
 	imprimeEstadoNo(noh, "3")
 
-	exibeMenu()
+	exibeMenu(noh)
 }
