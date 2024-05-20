@@ -66,4 +66,9 @@ func main() {
 	endereco, porta = enderecoCompleto[0], enderecoCompleto[1]
 
 	criaSocketTCP(endereco, porta)
+
+	init_server()
+
+	init_client()
+
 }

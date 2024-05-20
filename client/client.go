@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"bufio"
@@ -8,18 +8,16 @@ import (
 
 // Definir funções que o cliente pode executar
 
-func find_all_neighbours() [][]string {
+func list_all_neighbours(_file_ string) {
 
-	/* TODO: implementar a busca por todos os vizinhos
-	   Returned values: [][]string => matriz de strings com os vizinhos
+	/* TODO: imprimir todos os vizinhos
+	   Returned values: void
 	*/
-
-	return make([][]string, 0)
 
 }
 
 func search_flooding(_key_ string) (_status_ bool, _value_ int) {
-	/* TODO: implementar a requisição da chave para todos os vizinhos
+	/* TODO: implementar a requisição da chave para todos os vizinhos usando flooding
 	   Returned values: _status_ => se achou o não a chave
 						_key_ => valor da chave, -1 se não for encontrada
 	*/
@@ -28,7 +26,16 @@ func search_flooding(_key_ string) (_status_ bool, _value_ int) {
 
 }
 
-func main() {
+func search_random_walk(_key_ string) (_status_ bool, _value_ int) {
+	/*  TODO: implementar a requisição de chave para todos os veizinhos usando random walk
+	   Returned values: _status_ => se achou o não a chave
+					_key_ => valor da chave, -1 se não for encontrada
+	*/
+
+	return true, 1
+}
+
+func init_client() {
 
 	resp, err := http.Get("http://localhost:8090/hello")
 	if err != nil {
