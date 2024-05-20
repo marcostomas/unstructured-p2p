@@ -48,6 +48,24 @@ func verificaArgs(args []string) (int, bool) {
 	return lenArgs, false
 }
 
+func extraiArgs(args []string, nArgs int) (string, string, string) {
+
+	if nArgs == 4 {
+		return args[1], args[2], args[3]
+	}
+
+	if nArgs == 3 {
+		return args[2], args[2], ""
+	}
+
+	if nArgs == 2 {
+		return args[2], "", ""
+	}
+
+	return "", "", ""
+
+}
+
 func getEnderecoPorta(url string) (string, string) {
 
 	enderecoCompleto := strings.Split(url, ":")
@@ -123,22 +141,35 @@ func main() {
 	args := os.Args
 	nArgs, check_args := verificaArgs(args)
 
+	host, arqVizinhos, arqParesChaveValor := extraiArgs(args, nArgs)
+
 	// Não precisa mais por causa do exit
 	if !check_args {
 		os.Exit(1)
 	}
 
-	vizinhos, status := lerArquivo(args[2])
-	if !status {
-		panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
+	var vizinhos string
+
+	if nArgs >= 3 {
+		data, status := lerArquivo(arqVizinhos)
+		vizinhos = string(data)
+		if !status {
+			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
+		}
 	}
 
-	paresChaveValor, status := lerArquivo(args[3])
-	if !status {
-		panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
+	var paresChaveValor string
+
+	if nArgs >= 4 {
+		data, status := lerArquivo(arqParesChaveValor)
+		paresChaveValor = string(data)
+		if !status {
+			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
+		}
+
 	}
 
-	PORT := ":" + strings.Split(args[1], ":")[1]
+	PORT := ":" + strings.Split(host, ":")[1]
 
 	go server.InitServer(PORT)
 
@@ -153,7 +184,7 @@ func main() {
 
 	fmt.Println(nosVizinhos)
 
-	no := newNo(strings.Split(string(paresChaveValor), "\n"), nosVizinhos)
+	no := newNo(host, strings.Split(string(paresChaveValor), "\n"), nosVizinhos)
 
 	exibeMenu(no)
 }

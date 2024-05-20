@@ -24,11 +24,7 @@ func SearchFlooding(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-<<<<<<< HEAD
-func init_server() {
-=======
 func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {
->>>>>>> 1c6ac3a3466a4e05bd8c4c98b574149fc2d0fccf
 
 }
 
