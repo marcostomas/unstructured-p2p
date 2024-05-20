@@ -4,53 +4,96 @@ import (
 	"bufio"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 // Definir funções que o cliente pode executar
 
-func list_all_neighbours(_file_ string) {
+func ListAllNeighbours() [][]string {
 
-	/* TODO: imprimir todos os vizinhos
-	   Returned values: void
+	/* TODO: implementar a busca por todos os vizinhos
+	   Returned values: [][]string => matriz de strings com os vizinhos
 	*/
+
+	return make([][]string, 0)
 
 }
 
-func search_flooding(_key_ string) (_status_ bool, _value_ int) {
-	/* TODO: implementar a requisição da chave para todos os vizinhos usando flooding
+func ShowNeighboursToChoose(vizinhos []string, handler func(string) bool) {
+
+	fmt.Printf("\nEscolha o vizinho:\n")
+	fmt.Printf("Há %d vizinhos na tabela\n", len(vizinhos))
+
+	for i, vizinho := range vizinhos {
+		fmt.Printf("[%d] %s\n", i, vizinho)
+	}
+
+	var numero int
+	_, err := fmt.Scanln(&numero)
+
+	if err != nil {
+		fmt.Println("Erro ao ler o número", err)
+	}
+
+	handler(vizinhos[numero])
+
+}
+
+func Hello(endereco string) bool {
+
+	var url string = "http://" + endereco + "/hello"
+
+	message, status := consumeEndpoint(url)
+
+	if status {
+		fmt.Println("Message received from " + endereco + ": " + message)
+		return true
+	} else {
+		fmt.Println("Não foi possível fazer a comunicação com " + endereco)
+		return false
+	}
+
+}
+
+func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
+
+	/* TODO: implementar a requisição da chave para todos os vizinhos
 	   Returned values: _status_ => se achou o não a chave
 						_key_ => valor da chave, -1 se não for encontrada
 	*/
 
+	fmt.Println("Mandando um searchFlooding")
+
 	return true, 1
 
 }
 
-func search_random_walk(_key_ string) (_status_ bool, _value_ int) {
-	/*  TODO: implementar a requisição de chave para todos os veizinhos usando random walk
-	   Returned values: _status_ => se achou o não a chave
-					_key_ => valor da chave, -1 se não for encontrada
-	*/
+func SearchRandomWalk(_key_ string) (_status_ bool, _value_ int) {
 
 	return true, 1
 }
 
-func init_client() {
+func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
 
-	resp, err := http.Get("http://localhost:8090/hello")
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
+	return true, 1
+}
 
-	fmt.Println("Response status:", resp.Status)
+func consumeEndpoint(url string) (string, bool) {
+
+	time.Sleep(1000 * time.Millisecond)
+
+	resp, err := http.Get(url)
+
+	var message string
 
 	scanner := bufio.NewScanner(resp.Body)
-	for i := 0; scanner.Scan() && i < 5; i++ {
-		fmt.Println(scanner.Text())
+	for i := 0; scanner.Scan(); i++ {
+		message += scanner.Text()
 	}
 
-	if err := scanner.Err(); err != nil {
-		panic(err)
+	if err != nil {
+		return message, false
 	}
+
+	return message, true
 }
