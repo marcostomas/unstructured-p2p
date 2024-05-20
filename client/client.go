@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 // Definir funções que o cliente pode executar
@@ -18,9 +19,39 @@ func ListAllNeighbours() [][]string {
 
 }
 
-func Hello() {
+func ShowNeighboursToChoose(vizinhos []string, handler func(string) bool) {
 
-	consumeEndpoint("http://localhost:10000/hello")
+	fmt.Printf("\nEscolha o vizinho:\n")
+	fmt.Printf("Há %d vizinhos na tabela\n", len(vizinhos))
+
+	for i, vizinho := range vizinhos {
+		fmt.Printf("[%d] %s\n", i, vizinho)
+	}
+
+	var numero int
+	_, err := fmt.Scanln(&numero)
+
+	if err != nil {
+		fmt.Println("Erro ao ler o número", err)
+	}
+
+	handler(vizinhos[numero])
+
+}
+
+func Hello(endereco string) bool {
+
+	var url string = "http://" + endereco + "/hello"
+
+	message, status := consumeEndpoint(url)
+
+	if status {
+		fmt.Println("Message received from " + endereco + ": " + message)
+		return true
+	} else {
+		fmt.Println("Não foi possível fazer a comunicação com " + endereco)
+		return false
+	}
 
 }
 
@@ -47,24 +78,22 @@ func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
 	return true, 1
 }
 
-func consumeEndpoint(url string) {
+func consumeEndpoint(url string) (string, bool) {
+
+	time.Sleep(1000 * time.Millisecond)
 
 	resp, err := http.Get(url)
 
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
-	fmt.Println("Response status:", resp.Status)
+	var message string
 
 	scanner := bufio.NewScanner(resp.Body)
 	for i := 0; scanner.Scan(); i++ {
-		fmt.Println(scanner.Text())
+		message += scanner.Text()
 	}
 
-	if err := scanner.Err(); err != nil {
-		panic(err)
+	if err != nil {
+		return message, false
 	}
+
+	return message, true
 }

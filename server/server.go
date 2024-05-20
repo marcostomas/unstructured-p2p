@@ -7,7 +7,9 @@ import (
 
 func Hello(w http.ResponseWriter, req *http.Request) {
 
-	fmt.Println("Enviando resposta para o cliente!")
+	fmt.Println("\n#############################################")
+	fmt.Println("###### Enviando resposta para o cliente! ####")
+	fmt.Println("#############################################\n")
 
 	fmt.Fprintf(w, "Hello from Server!\n")
 
@@ -30,13 +32,13 @@ func SearchInDepth(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func InitServer() {
+func InitServer(PORT string) {
 
 	http.HandleFunc("/hello", Hello)
 	http.HandleFunc("/SearchFlooding", SearchFlooding)
 	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
 	http.HandleFunc("/SearchInDepth", SearchInDepth)
 
-	fmt.Println("Escutando na porta 10000")
-	http.ListenAndServe(":10000", nil)
+	fmt.Printf("Escutando na porta %s\n", PORT)
+	http.ListenAndServe(PORT, nil)
 }

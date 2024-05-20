@@ -5,9 +5,9 @@ import (
 	"UP2P/server"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 var TTL = 100
@@ -56,29 +56,28 @@ func getEnderecoPorta(url string) (string, string) {
 	return endereco, porta
 }
 
-func comunicarVizinhos(vizinhos string) []no {
-	vizinhosArr := strings.Split(vizinhos, " ")
-	nosVizinhos := make([]no, len(vizinhosArr))
+func comunicarVizinhos(vizinhos string) []string {
 
-	// range retorna indice, valor. Com "_" estou ignorando o índice no caso abaixo
+	vizinhosArr := strings.Split(vizinhos, "\n")
+
+	var vizinhosAtivos = make([]string, 0)
+
 	for _, vizinho := range vizinhosArr {
-		fmt.Println("Tentando adicionar vizinho " + vizinho + ".")
+		time.Sleep(1000 * time.Millisecond)
+		fmt.Println("------------------------------------")
+		fmt.Printf("Fazendo consulta ao vizinho %s\n", vizinho)
+		status := client.Hello(vizinho)
 
-		resposta, err := http.Get(vizinho + "/hello")
-		if err != nil {
-			fmt.Println("Erro ao enviar a requisição:", err)
-			continue
-		} else if resposta.StatusCode == 200 {
-			var node = new(no)
-			nosVizinhos = append(nosVizinhos, *node)
+		if status {
+			fmt.Println("Vizinho " + vizinho + " sendo adicionado à tabela.\n")
+			vizinhosAtivos = append(vizinhosAtivos, vizinho)
 		}
-		defer resposta.Body.Close()
 	}
 
-	return nosVizinhos
+	return vizinhosAtivos
 }
 
-func exibeMenu() {
+func exibeMenu(no *no) {
 
 	fmt.Println("Escolha o comando")
 	fmt.Println("[0] Listar vizinhos")
@@ -101,7 +100,7 @@ func exibeMenu() {
 		case 0:
 			client.SearchFlooding("")
 		case 1:
-			client.Hello()
+			client.ShowNeighboursToChoose(no.vizinhos, client.Hello)
 		case 2:
 			fmt.Println("SEARCH (flooding)")
 		case 3:
@@ -116,7 +115,7 @@ func exibeMenu() {
 			os.Exit(0)
 		}
 	}
-	exibeMenu()
+	exibeMenu(no)
 }
 
 func main() {
@@ -129,47 +128,32 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Tentando extrair os dados de " + args[2] + "...")
 	vizinhos, status := lerArquivo(args[2])
 	if !status {
 		panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
-	} else {
-		fmt.Println("Leitura do arquivo bem sucedida!")
 	}
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Tentando extrair os dados de " + args[3] + "...")
 	paresChaveValor, status := lerArquivo(args[3])
 	if !status {
 		panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
-	} else {
-		fmt.Println("Leitura do arquivo bem sucedida!")
 	}
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Vizinhos: ")
-	fmt.Println(string(vizinhos) + "\n")
+	PORT := ":" + strings.Split(args[1], ":")[1]
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Pares chave-valor: ")
-	fmt.Println(string(paresChaveValor) + "\n")
+	go server.InitServer(PORT)
 
-	no := newNo(strings.Split(string(paresChaveValor), ";"),
-		strings.Split(string(vizinhos), ";"))
+	time.Sleep(5000 * time.Millisecond)
 
-	fmt.Println(no.pares_chave_valor)
-	fmt.Println(no.vizinhos)
+	var nosVizinhos []string
 
 	// Envia HELLO para confirmar a existência do vizinho
 	if nArgs > 2 {
-		nosVizinhos := comunicarVizinhos(args[2])
-
-		fmt.Println(nosVizinhos)
-
+		nosVizinhos = comunicarVizinhos(string(vizinhos))
 	}
 
-	go server.InitServer()
+	fmt.Println(nosVizinhos)
 
-	exibeMenu()
+	no := newNo(strings.Split(string(paresChaveValor), "\n"), nosVizinhos)
+
+	exibeMenu(no)
 }
