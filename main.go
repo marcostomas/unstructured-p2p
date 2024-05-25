@@ -1,7 +1,6 @@
 package main
 
 import (
-	"UP2P/client"
 	"UP2P/server"
 	"fmt"
 	"io/ioutil"
@@ -11,13 +10,25 @@ import (
 )
 
 var TTL = 100
+var node *no
 
-func lerArquivo(nomeArquivo string) ([]byte, bool) {
+func imprimeEstadoNo(noh *no, mensagem string) {
+	fmt.Printf("\n\n\n\n")
+	fmt.Printf("////////////////////////// Estado do nó - %s ///////////////////////////////\n", mensagem)
+
+	fmt.Println("Pares chave-valor: ", noh.pares_chave_valor)
+	fmt.Println("Vizinhos: ", noh.vizinhos)
+	fmt.Println("Mensagens recebidas: ", noh.mensagens_recebidas)
+
+	fmt.Printf("\n\n\n")
+}
+
+func lerArquivo(nomeArquivo string) []byte {
 	// Abre o arquivo
 	arquivo, err := os.Open(nomeArquivo)
 	if err != nil {
 		fmt.Println("Erro ao abrir o arquivo:", err)
-		return nil, false
+		return nil
 	}
 	defer arquivo.Close()
 
@@ -25,21 +36,18 @@ func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	conteudo, err := ioutil.ReadAll(arquivo)
 	if err != nil {
 		fmt.Println("Erro ao ler o arquivo:", err)
-		return nil, false
+		return nil
 	}
 
-	return conteudo, true
+	return conteudo
 }
 
 func verificaArgs(args []string) (int, bool) {
 	lenArgs := len(args)
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Fazendo verificação da quantidade de argumentos...")
-
-	if lenArgs > 0 || lenArgs < 5 {
+	if lenArgs > 0 && lenArgs < 5 {
 		fmt.Println("Validação OK!")
-		fmt.Printf("Argumentos: %s\n\n", args)
+		fmt.Printf("Argumentos: %s\n", args)
 		return lenArgs, true
 	}
 
@@ -49,37 +57,61 @@ func verificaArgs(args []string) (int, bool) {
 }
 
 func getEnderecoPorta(url string) (string, string) {
-
 	enderecoCompleto := strings.Split(url, ":")
 	endereco, porta := enderecoCompleto[0], enderecoCompleto[1]
 
 	return endereco, porta
 }
 
-func comunicarVizinhos(vizinhos string) []no {
+func comunicarVizinhos(vizinhos string, noh *no) {
 	vizinhosArr := strings.Split(vizinhos, " ")
-	nosVizinhos := make([]no, len(vizinhosArr))
 
 	// range retorna indice, valor. Com "_" estou ignorando o índice no caso abaixo
 	for _, vizinho := range vizinhosArr {
 		fmt.Println("Tentando adicionar vizinho " + vizinho + ".")
 
-		resposta, err := http.Get(vizinho + "/hello")
+		resposta, err := http.Get("http://" + vizinho + "/hello")
 		if err != nil {
 			fmt.Println("Erro ao enviar a requisição:", err)
 			continue
 		} else if resposta.StatusCode == 200 {
-			var node = new(no)
-			nosVizinhos = append(nosVizinhos, *node)
+			fmt.Println("Envio feito com sucesso: ")
+
+			noh.vizinhos = append(noh.vizinhos, vizinho)
 		}
 		defer resposta.Body.Close()
 	}
-
-	return nosVizinhos
 }
 
-func exibeMenu() {
+func alterarTTL() {
+	fmt.Println("Digite o novo valor de TTL:")
+	_, err := fmt.Scanln(&TTL)
+	if err != nil {
+		fmt.Println("Erro ao ler o número", err)
+		alterarTTL()
+	}
+	fmt.Println("TTL alterado para:", TTL)
+}
 
+func sair(noh *no) {
+	fmt.Println("Saindo...")
+	// Envia mensagem de saída para todos os vizinhos
+	// for _, vizinho := range noh.vizinhos {
+	// 	client.bye(vizinho)
+	// }
+
+	os.Exit(0)
+}
+
+func hello() {
+	/*
+		for _, vizinho := range node.nosVizinhos{
+			client.Hello(getEnderecoPorta(vizinho))
+		}
+	*/
+}
+
+func exibeMenu(noh *no) {
 	fmt.Println("Escolha o comando")
 	fmt.Println("[0] Listar vizinhos")
 	fmt.Println("[1] Hello")
@@ -95,28 +127,30 @@ func exibeMenu() {
 
 	if err != nil {
 		fmt.Println("Erro ao ler o número", err)
-	} else {
-
-		switch numero {
-		case 0:
-			client.SearchFlooding("")
-		case 1:
-			client.Hello()
-		case 2:
-			fmt.Println("SEARCH (flooding)")
-		case 3:
-			fmt.Println("SEARCH (random walk)")
-		case 4:
-			fmt.Println("SEARCH (busca em profundidade)")
-		case 5:
-			fmt.Println("Estatísticas")
-		case 6:
-			fmt.Println("Alterar valor padrão de TTL")
-		case 9:
-			os.Exit(0)
-		}
+		exibeMenu(noh)
 	}
-	exibeMenu()
+	fmt.Println("Você escolheu ", numero)
+
+	switch numero {
+	case 0:
+		fmt.Println("Listar vizinhos")
+	case 1:
+		hello()
+	case 2:
+		fmt.Println("SEARCH (flooding)")
+	case 3:
+		fmt.Println("SEARCH (random walk)")
+	case 4:
+		fmt.Println("SEARCH (busca em profundidade)")
+	case 5:
+		fmt.Println("Estatísticas")
+	case 6:
+		alterarTTL()
+	case 9:
+		sair(noh)
+	}
+
+	exibeMenu(noh)
 }
 
 func main() {
@@ -129,47 +163,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Tentando extrair os dados de " + args[2] + "...")
-	vizinhos, status := lerArquivo(args[2])
-	if !status {
-		panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
-	} else {
-		fmt.Println("Leitura do arquivo bem sucedida!")
-	}
+	endereco, porta := getEnderecoPorta(args[1])
+	go server.InitServer(endereco, porta)
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Tentando extrair os dados de " + args[3] + "...")
-	paresChaveValor, status := lerArquivo(args[3])
-	if !status {
-		panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
-	} else {
-		fmt.Println("Leitura do arquivo bem sucedida!")
-	}
-
-	fmt.Println("------------------------------------")
-	fmt.Println("Vizinhos: ")
-	fmt.Println(string(vizinhos) + "\n")
-
-	fmt.Println("------------------------------------")
-	fmt.Println("Pares chave-valor: ")
-	fmt.Println(string(paresChaveValor) + "\n")
-
-	no := newNo(strings.Split(string(paresChaveValor), ";"),
-		strings.Split(string(vizinhos), ";"))
-
-	fmt.Println(no.pares_chave_valor)
-	fmt.Println(no.vizinhos)
+	noh := inicializaNode()
+	imprimeEstadoNo(noh, "1")
 
 	// Envia HELLO para confirmar a existência do vizinho
 	if nArgs > 2 {
-		nosVizinhos := comunicarVizinhos(args[2])
-
-		fmt.Println(nosVizinhos)
-
+		comunicarVizinhos(string(lerArquivo(args[2])), noh)
 	}
 
-	go server.InitServer()
+	imprimeEstadoNo(noh, "2")
 
-	exibeMenu()
+	if nArgs == 4 {
+		adicionaChaveDoNo(string(lerArquivo(args[3])), noh)
+	}
+
+	imprimeEstadoNo(noh, "3")
+
+	exibeMenu(noh)
 }

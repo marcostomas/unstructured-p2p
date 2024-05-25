@@ -1,31 +1,28 @@
 package main
 
-import (
-	"fmt"
-	"strings"
-)
+import "strings"
 
 type no struct {
-	pares_chave_valor map[string]string //Par nome e número associado
-	vizinhos          map[string]string //Par endereço e porta
+	pares_chave_valor   map[string]string //Par nome e número associado
+	vizinhos            []string
+	mensagens_recebidas []string
+	seqNum              int
 }
 
-func newNo(_pares []string, _vizinhos []string) *no {
-	pares := make(map[string]string)
+func inicializaNode() *no {
+	node = new(no)
+	node.pares_chave_valor = make(map[string]string)
+	node.vizinhos = make([]string, 0)
+	node.mensagens_recebidas = make([]string, 0)
+	node.seqNum = 1 // Primeiro envia a mensagem, depois incrementa o seqNum
+	return node
+}
 
-	for i := 0; i < len(_pares)-1; i++ {
-		pares[strings.Split(_pares[i], " ")[0]] = strings.Split(_pares[i], " ")[1]
+func adicionaChaveDoNo(pares string, noh *no) {
+	paresArr := strings.Split(pares, "\n")
+
+	for _, par := range paresArr {
+		parArr := strings.Split(par, " ")
+		noh.pares_chave_valor[parArr[0]] = parArr[1]
 	}
-
-	vizinhos := make(map[string]string)
-
-	for i := 0; i < len(_vizinhos)-1; i++ {
-		vizinhos[strings.Split(_vizinhos[i], ":")[0]] = strings.Split(_vizinhos[i], ":")[1]
-	}
-
-	fmt.Println(pares)
-	fmt.Println(vizinhos)
-
-	return &no{pares_chave_valor: pares, vizinhos: vizinhos}
-
 }

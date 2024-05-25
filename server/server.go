@@ -10,7 +10,6 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("Enviando resposta para o cliente!")
 
 	fmt.Fprintf(w, "Hello from Server!\n")
-
 }
 
 func SearchFlooding(w http.ResponseWriter, req *http.Request) {
@@ -22,15 +21,11 @@ func SearchFlooding(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {
+func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {}
 
-}
+func SearchInDepth(w http.ResponseWriter, req *http.Request) {}
 
-func SearchInDepth(w http.ResponseWriter, req *http.Request) {
-
-}
-
-func InitServer() {
+func InitServer(endereco string, porta string) {
 
 	http.HandleFunc("/hello", Hello)
 	http.HandleFunc("/SearchFlooding", SearchFlooding)
@@ -39,4 +34,7 @@ func InitServer() {
 
 	fmt.Println("Escutando na porta 10000")
 	http.ListenAndServe(":10000", nil)
+	http.HandleFunc("/hello", Hello)
+
+	http.ListenAndServe(endereco+":"+porta, nil)
 }
