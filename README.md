@@ -13,8 +13,8 @@
 | [X]    | Menu, controle de comando, alteração de TTL, sair | Marcos      | 19/05 |
 | [ ]    | Listar vizinhos                                   | Rafael      | 19/05 |
 | [ ]    | Hello                                             | Rafael      | 19/05 |
-| [ ]    | Search (flooding)                                 |             |       |
-| [ ]    | Search (random walk)                              |             |       |
+| [ ]    | Search (flooding)                                 | Marcos      | 29/05 |
+| [ ]    | Search (random walk)                              | Rafael      | 29/05 |
 | [ ]    | Search (busca em profundidade)                    |             |       |
 | [ ]    | Estatísticas                                      |             |       |
 | [ ]    | Relatório                                         |             |       |
@@ -23,11 +23,11 @@
 
 Para cada busca teremos dois endpoints, um para pedir que o próximo nó verifique em sua tabela interna; e o outro para comunicar uma chave encontrada.
 
-Busca por flooding: /EncontradoFL, /BuscarFL
-Busca por random walk: /EncontradoRW, BuscarRW
-Busca por profundidade: /EncontradoBP, BuscarBP
-Hello
-Bye
+- Busca por flooding: /EncontradoFL, /BuscarFL
+- Busca por random walk: /EncontradoRW, BuscarRW
+- Busca por profundidade: /EncontradoBP, BuscarBP
+- Hello
+- Bye
 
 Total de 8 endpoints
 
