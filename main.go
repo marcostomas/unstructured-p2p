@@ -11,7 +11,6 @@ import (
 )
 
 var TTL = 100
-var node *no
 
 func imprimeEstadoNo(noh *no, mensagem string) {
 	fmt.Printf("\n\n\n\n")

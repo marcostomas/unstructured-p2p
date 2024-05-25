@@ -11,6 +11,8 @@ type no struct {
 	PORT                string
 }
 
+var node *no
+
 func inicializaNode() *no {
 	node = new(no)
 	node.pares_chave_valor = make(map[string]string)
