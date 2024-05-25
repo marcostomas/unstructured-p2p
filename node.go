@@ -7,6 +7,8 @@ type no struct {
 	vizinhos            []string
 	mensagens_recebidas []string
 	seqNum              int
+	HOST                string
+	PORT                string
 }
 
 func inicializaNode() *no {

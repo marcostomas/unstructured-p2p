@@ -7,9 +7,23 @@ import (
 
 func Hello(w http.ResponseWriter, req *http.Request) {
 
-	fmt.Println("Enviando resposta para o cliente!")
+	url := req.URL.Query()
 
-	fmt.Fprintf(w, "Hello from Server!\n")
+	HOST := url.Get("host")
+	PORT := url.Get("port")
+	NOSEQ := url.Get("ttl")
+	TTL := url.Get("ttl")
+	MESSAGE := url.Get("message")
+
+	fmt.Println("Mensagem recebida: " +
+		HOST + ":" +
+		PORT + " " +
+		NOSEQ + " " +
+		TTL + " " +
+		MESSAGE)
+
+	fmt.Fprintf(w, "OK!\n")
+
 }
 
 func SearchFlooding(w http.ResponseWriter, req *http.Request) {
@@ -25,16 +39,13 @@ func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {}
 
 func SearchInDepth(w http.ResponseWriter, req *http.Request) {}
 
-func InitServer(endereco string, porta string) {
+func InitServer(HOST string, PORT string) {
 
-	http.HandleFunc("/hello", Hello)
+	http.HandleFunc("/hello/?host=host&port=port&noseq=noseq&ttl=ttl&message=message", Hello)
 	http.HandleFunc("/SearchFlooding", SearchFlooding)
 	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
 	http.HandleFunc("/SearchInDepth", SearchInDepth)
 
-	fmt.Println("Escutando na porta 10000")
-	http.ListenAndServe(":10000", nil)
-	http.HandleFunc("/hello", Hello)
-
-	http.ListenAndServe(endereco+":"+porta, nil)
+	http.ListenAndServe(HOST+":"+PORT, nil)
+	fmt.Printf("Escutando na porta %s\n", PORT)
 }
