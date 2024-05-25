@@ -169,7 +169,9 @@ func main() {
 
 	}
 
-	PORT := ":" + strings.Split(host, ":")[1]
+	HOST := 
+
+	PORT := strings.Split(host, ":")[1]
 
 	go server.InitServer(PORT)
 

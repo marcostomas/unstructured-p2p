@@ -7,11 +7,22 @@ import (
 
 func Hello(w http.ResponseWriter, req *http.Request) {
 
-	fmt.Println("\n#############################################")
-	fmt.Println("###### Enviando resposta para o cliente! ####")
-	fmt.Println("#############################################\n")
+	url := req.URL.Query()
 
-	fmt.Fprintf(w, "Hello from Server!\n")
+	HOST := url.Get("host")
+	PORT := url.Get("port")
+	NOSEQ := url.Get("ttl")
+	TTL := url.Get("ttl")
+	MESSAGE := url.Get("message")
+
+	fmt.Println("Mensagem recebida: " +
+		HOST + ":" +
+		PORT + " " +
+		NOSEQ + " " +
+		TTL + " " +
+		MESSAGE)
+
+	fmt.Fprintf(w, "OK!\n")
 
 }
 
@@ -32,9 +43,14 @@ func SearchInDepth(w http.ResponseWriter, req *http.Request) {
 
 }
 
+// urlStr := "https://example.com/?product=shirt&color=blue&newuser&size=m"
+// myUrl, _ := url.Parse(urlStr)
+// params, _ := url.ParseQuery(myUrl.RawQuery)
+// fmt.Println(params)
+
 func InitServer(PORT string) {
 
-	http.HandleFunc("/hello", Hello)
+	http.HandleFunc("/hello/?host=host&port=port&noseq=noseq&ttl=ttl&message=message", Hello)
 	http.HandleFunc("/SearchFlooding", SearchFlooding)
 	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
 	http.HandleFunc("/SearchInDepth", SearchInDepth)

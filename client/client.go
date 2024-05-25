@@ -19,7 +19,7 @@ func ListAllNeighbours() [][]string {
 
 }
 
-func ShowNeighboursToChoose(vizinhos []string, handler func(string) bool) {
+func ShowNeighboursToChoose(vizinhos []string) {
 
 	fmt.Printf("\nEscolha o vizinho:\n")
 	fmt.Printf("Há %d vizinhos na tabela\n", len(vizinhos))
@@ -35,21 +35,48 @@ func ShowNeighboursToChoose(vizinhos []string, handler func(string) bool) {
 		fmt.Println("Erro ao ler o número", err)
 	}
 
-	handler(vizinhos[numero])
+	Hello()
 
 }
 
-func Hello(endereco string) bool {
+func Hello(HOST string,
+	PORT string,
+	NOSEQ string,
+	TTL string,
+	MESSAGE string,
+	ORIGIN_HOST string,
+	ORIGIN_PORT string) bool {
 
-	var url string = "http://" + endereco + "/hello"
+	var url string = "http://" +
+		HOST +
+		":" +
+		PORT +
+		"/hello" +
+		"/" + ORIGIN_HOST +
+		"/" + ORIGIN_PORT +
+		"/" + NOSEQ +
+		"/" + TTL +
+		"/" + MESSAGE
 
-	message, status := consumeEndpoint(url)
+	fmt.Println("Encaminhando mensagem" +
+		ORIGIN_HOST + ":" +
+		ORIGIN_PORT + " " +
+		NOSEQ + " " +
+		TTL + " " +
+		MESSAGE)
+
+	_, status := consumeEndpoint(url)
 
 	if status {
-		fmt.Println("Message received from " + endereco + ": " + message)
+		fmt.Println("\tEnvio feito com sucesso: " +
+			ORIGIN_HOST + ":" +
+			ORIGIN_PORT + " " +
+			NOSEQ + " " +
+			TTL + " " +
+			MESSAGE)
 		return true
 	} else {
-		fmt.Println("Não foi possível fazer a comunicação com " + endereco)
+		fmt.Println("Não foi possível fazer a comunicação com: " + HOST + ":" + PORT)
 		return false
 	}
 
@@ -84,15 +111,15 @@ func consumeEndpoint(url string) (string, bool) {
 
 	resp, err := http.Get(url)
 
+	if err != nil {
+		return "Não foi possível estabelecer a conexão com " + url, false
+	}
+
 	var message string
 
 	scanner := bufio.NewScanner(resp.Body)
 	for i := 0; scanner.Scan(); i++ {
 		message += scanner.Text()
-	}
-
-	if err != nil {
-		return message, false
 	}
 
 	return message, true
