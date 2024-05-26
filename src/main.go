@@ -13,6 +13,20 @@ import (
 
 var TTL = 100
 
+func imprimeEstadoNo(noh *node.No, mensagem string) {
+	fmt.Printf("\n\n\n\n")
+	fmt.Printf("////////////////////////// Estado do nó - %s ///////////////////////////////\n", mensagem)
+
+	fmt.Println("Host:", noh.HOST)
+	fmt.Println("Port:", noh.PORT)
+	fmt.Println("Pares chave-valor: ", noh.Pares_chave_valor)
+	fmt.Println("Vizinhos: ", noh.Vizinhos)
+	fmt.Println("Mensagens recebidas: ", noh.Mensagens_recebidas)
+	fmt.Println("Número de Sequência: ", noh.seqNum)
+
+	fmt.Printf("\n\n\n")
+}
+
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
 	arquivo, err := os.Open(nomeArquivo)

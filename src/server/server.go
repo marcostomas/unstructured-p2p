@@ -56,11 +56,6 @@ func SearchInDepth(w http.ResponseWriter, req *http.Request) {
 
 }
 
-// urlStr := "https://example.com/?product=shirt&color=blue&newuser&size=m"
-// myUrl, _ := url.Parse(urlStr)
-// params, _ := url.ParseQuery(myUrl.RawQuery)
-// fmt.Println(params)
-
 func InitServer(PORT string) {
 
 	http.HandleFunc("/hello/?host=host&port=port&noseq=noseq&ttl=ttl&message=message", Hello)
