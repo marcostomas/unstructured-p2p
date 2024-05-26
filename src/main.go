@@ -2,6 +2,7 @@ package main
 
 import (
 	"UP2P/client"
+	"UP2P/node"
 	"UP2P/server"
 	"fmt"
 	"io/ioutil"
@@ -12,18 +13,32 @@ import (
 
 var TTL = 100
 
-func imprimeEstadoNo(noh *no, mensagem string) {
-	fmt.Printf("\n\n\n\n")
+func imprimeEstadoNo(noh *node.No, mensagem string) {
+	fmt.Printf("\n")
 	fmt.Printf("////////////////////////// Estado do nó - %s ///////////////////////////////\n", mensagem)
 
-	fmt.Println("Host:", noh.HOST)
-	fmt.Println("Port:", noh.PORT)
-	fmt.Println("Pares chave-valor: ", noh.pares_chave_valor)
-	fmt.Println("Vizinhos: ", noh.vizinhos)
-	fmt.Println("Mensagens recebidas: ", noh.mensagens_recebidas)
-	fmt.Println("Número de Sequência: ", noh.seqNum)
+	fmt.Println("HOST: ", noh.HOST)
+	fmt.Println("PORT: ", noh.PORT)
+	fmt.Println("Pares chave-valor: [")
 
-	fmt.Printf("\n\n\n")
+	for key, value := range noh.Pares_chave_valor {
+		fmt.Println("\t\t" + key + " " + value)
+	}
+
+	fmt.Println("]")
+
+	fmt.Println("Vizinhos: [")
+
+	for _, vizinho := range noh.Vizinhos {
+		fmt.Println("\t\t" + vizinho.HOST + ":" + vizinho.PORT)
+	}
+
+	fmt.Println("]")
+
+	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
+	fmt.Println("Número de Sequência: ", noh.NoSeq)
+
+	fmt.Printf("\n")
 }
 
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
@@ -84,46 +99,20 @@ func getEnderecoPorta(url string) (string, string) {
 	return endereco, porta
 }
 
-func comunicarVizinhos(vizinhos string, noh *no) {
-	vizinhosArr := strings.Split(vizinhos, "\n")
+func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) {
 
-	// range retorna indice, valor. Com "_" estou ignorando o índice no caso abaixo
-	for _, vizinho := range vizinhosArr {
-		fmt.Println("Tentando adicionar vizinho " + vizinho + ".")
+	for _, vizinho := range vizinhos {
+		time.Sleep(1000 * time.Millisecond)
+		status := client.Hello(vizinho.HOST, vizinho.PORT, no)
 
-		ret := client.Hello(noh.HOST, noh.PORT, string(noh.seqNum), string(TTL), "Hello", vizinho, noh.PORT)
-		if ret == true {
-			fmt.Println("Envio feito com sucesso: ")
-			noh.vizinhos = append(noh.vizinhos, vizinho)
-			continue
-		} else {
-			fmt.Println("Erro ao enviar a requisição")
-			continue
+		if status {
+			fmt.Println("Vizinho " + vizinho.HOST + ":" + vizinho.PORT + " sendo adicionado à tabela.\n")
+			node.AddNeighbour(no, vizinho.HOST, vizinho.PORT)
 		}
 	}
 }
 
-func alterarTTL() {
-	fmt.Println("Digite o novo valor de TTL:")
-	_, err := fmt.Scanln(&TTL)
-	if err != nil {
-		fmt.Println("Erro ao ler o número", err)
-		alterarTTL()
-	}
-	fmt.Println("TTL alterado para:", TTL)
-}
-
-func sair(noh *no) {
-	fmt.Println("Saindo...")
-	// Envia mensagem de saída para todos os vizinhos
-	// for _, vizinho := range noh.vizinhos {
-	// 	client.bye(vizinho)
-	// }
-
-	os.Exit(0)
-}
-
-func exibeMenu(noh *no) {
+func exibeMenu(no *node.No) {
 
 	fmt.Println("Escolha o comando")
 	fmt.Println("[0] Listar vizinhos")
@@ -140,31 +129,28 @@ func exibeMenu(noh *no) {
 
 	if err != nil {
 		fmt.Println("Erro ao ler o número", err)
-		exibeMenu(noh)
-	}
-	fmt.Println("Você escolheu ", numero)
+	} else {
 
-	switch numero {
-	case 0:
-		fmt.Println("Listar Vizinhos")
-		// client.ShowNeighboursToChoose(noh.vizinhos)
-	case 1:
-		client.Hello(noh.HOST, noh.PORT, string(noh.seqNum), string(TTL), "Hello", noh.HOST, noh.PORT)
-	case 2:
-		client.SearchFlooding("")
-		fmt.Println("SEARCH (flooding)")
-	case 3:
-		fmt.Println("SEARCH (random walk)")
-	case 4:
-		fmt.Println("SEARCH (busca em profundidade)")
-	case 5:
-		fmt.Println("Estatísticas")
-	case 6:
-		alterarTTL()
-	case 9:
-		sair(noh)
+		switch numero {
+		case 0:
+			client.SearchFlooding("")
+		case 1:
+			client.ShowNeighboursToChoose(no)
+		case 2:
+			fmt.Println("SEARCH (flooding)")
+		case 3:
+			fmt.Println("SEARCH (random walk)")
+		case 4:
+			fmt.Println("SEARCH (busca em profundidade)")
+		case 5:
+			fmt.Println("Estatísticas")
+		case 6:
+			fmt.Println("Alterar valor padrão de TTL")
+		case 9:
+			os.Exit(0)
+		}
 	}
-	exibeMenu(noh)
+	exibeMenu(no)
 }
 
 func main() {
@@ -172,14 +158,20 @@ func main() {
 	args := os.Args
 	nArgs, check_args := verificaArgs(args)
 
-	// Não precisa mais por causa do exit
 	if !check_args {
 		os.Exit(1)
 	}
-	host, arqVizinhos, arqParesChaveValor := extraiArgs(args, nArgs)
 
-	noh := inicializaNode()
-	noh.HOST, noh.PORT = getEnderecoPorta(host)
+	address, arqVizinhos, arqParesChaveValor := extraiArgs(args, nArgs)
+
+	HOST := strings.Split(address, ":")[0]
+
+	PORT := strings.Split(address, ":")[1]
+
+	fmt.Printf("---------------------------------------\n")
+	fmt.Printf("Inicializando nó...\n")
+
+	noh := node.NewNo(HOST, PORT)
 	go server.InitServer(noh.HOST, noh.PORT)
 
 	time.Sleep(5000 * time.Millisecond)
@@ -191,7 +183,9 @@ func main() {
 		if !status {
 			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
 		}
-		comunicarVizinhos(string(data), noh)
+		listaVizinhos := node.GenerateNeighboursList(data)
+		fmt.Printf("Tentando adicionar vizinhos na tabela...\n")
+		comunicarVizinhos(listaVizinhos, noh)
 	}
 
 	imprimeEstadoNo(noh, "2")
@@ -201,7 +195,11 @@ func main() {
 		if !status {
 			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
 		}
-		adicionaChaveDoNo(string(data), noh)
+		fmt.Printf("Tentando adicionar pares chave valor na tabela...\n")
+		arr := strings.Split(string(data), "\n")
+		for _, pair := range arr {
+			node.AddKey(pair, noh)
+		}
 	}
 
 	imprimeEstadoNo(noh, "3")

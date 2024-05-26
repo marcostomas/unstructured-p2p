@@ -1,32 +1,57 @@
-package main
+package node
 
 import "strings"
 
-type no struct {
-	pares_chave_valor   map[string]string //Par nome e número associado
-	vizinhos            []string
-	mensagens_recebidas []string
-	seqNum              int
-	HOST                string
-	PORT                string
+type Vizinho struct {
+	HOST string
+	PORT string
 }
 
-var node *no
-
-func inicializaNode() *no {
-	node = new(no)
-	node.pares_chave_valor = make(map[string]string)
-	node.vizinhos = make([]string, 0)
-	node.mensagens_recebidas = make([]string, 0)
-	node.seqNum = 1 // Primeiro envia a mensagem, depois incrementa o seqNum
-	return node
+type No struct {
+	HOST              string
+	PORT              string
+	NoSeq             int
+	Received_messages []string
+	Pares_chave_valor map[string]string //Par nome e número associado
+	Vizinhos          []*Vizinho
 }
 
-func adicionaChaveDoNo(pares string, noh *no) {
-	paresArr := strings.Split(pares, "\n")
+func NewNo(_HOST string,
+	_PORT string) *No {
 
-	for _, par := range paresArr {
-		parArr := strings.Split(par, " ")
-		noh.pares_chave_valor[parArr[0]] = parArr[1]
+	return &No{
+		HOST:              _HOST,
+		PORT:              _PORT,
+		NoSeq:             1,
+		Pares_chave_valor: map[string]string{},
+		Vizinhos:          make([]*Vizinho, 0)}
+}
+
+func AddKey(par string, noh *No) {
+
+	key := strings.Split(par, " ")[0]
+	value := strings.Split(par, " ")[1]
+
+	noh.Pares_chave_valor[key] = value
+}
+
+func AddNeighbour(no *No, _HOST string, _PORT string) {
+	no.Vizinhos = append(no.Vizinhos, &Vizinho{HOST: _HOST, PORT: _PORT})
+}
+
+func IncrementNoSeq(no *No) {
+	no.NoSeq++
+}
+
+func GenerateNeighboursList(data []byte) []*Vizinho {
+	arr := strings.Split(string(data), "\n")
+	listaVizinhos := make([]*Vizinho, 0)
+	for _, vizinho := range arr {
+		listaVizinhos = append(listaVizinhos, &Vizinho{
+			HOST: strings.Split(vizinho, ":")[0],
+			PORT: strings.Split(vizinho, ":")[1]})
 	}
+
+	return listaVizinhos
+
 }

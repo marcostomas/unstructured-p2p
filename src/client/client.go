@@ -1,112 +1,117 @@
 package client
 
 import (
+	"UP2P/node"
 	"bufio"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 // Definir funções que o cliente pode executar
 
 func ListAllNeighbours() [][]string {
+
 	/* TODO: implementar a busca por todos os vizinhos
 	   Returned values: [][]string => matriz de strings com os vizinhos
 	*/
+
 	return make([][]string, 0)
+
 }
 
-func ShowNeighboursToChoose(vizinhos []string) {
+func ShowNeighboursToChoose(no *node.No) {
+
+	vizinhos := no.Vizinhos
 
 	fmt.Printf("\nEscolha o vizinho:\n")
 	fmt.Printf("Há %d vizinhos na tabela\n", len(vizinhos))
 
 	for i, vizinho := range vizinhos {
-		fmt.Printf("[%d] %s\n", i, vizinho)
+		fmt.Printf("[%d] %s:%s\n", i, vizinho.HOST, vizinho.PORT)
 	}
 
-	var numero int
-	_, err := fmt.Scanln(&numero)
+	var n int
+	_, err := fmt.Scanln(&n)
 
 	if err != nil {
 		fmt.Println("Erro ao ler o número", err)
 	}
 
-	// Hello()
+	Hello(
+		vizinhos[n].HOST,
+		vizinhos[n].PORT,
+		no)
 
 }
 
-func Hello(HOST string,
-	PORT string,
-	NOSEQ string,
-	TTL string,
-	MESSAGE string,
-	ORIGIN_HOST string,
-	ORIGIN_PORT string) bool {
+func Hello(DESTINY_HOST string,
+	DESTINY_PORT string,
+	no *node.No) bool {
+
+	//Converter de int para string
+	noseq := strconv.Itoa(no.NoSeq)
 
 	var url string = "http://" +
-		HOST +
+		DESTINY_HOST +
 		":" +
-		PORT +
-		"/hello" +
-		"/" + ORIGIN_HOST +
-		"/" + ORIGIN_PORT +
-		"/" + NOSEQ +
-		"/" + TTL +
-		"/" + MESSAGE
+		DESTINY_PORT +
+		"/Hello?" +
+		"host=" + no.HOST +
+		"&port=" + no.PORT +
+		"&noseq=" + noseq +
+		"&ttl=" + "1" +
+		"&message=" + "HELLO"
 
-	fmt.Println("Encaminhando mensagem" +
-		ORIGIN_HOST + ":" +
-		ORIGIN_PORT + " " +
-		NOSEQ + " " +
-		TTL + " " +
-		MESSAGE)
+	node.IncrementNoSeq(no)
 
-	_, status := consumeEndpoint(url)
+	fmt.Println("Encaminhando mensagem \"" +
+		no.HOST + ":" +
+		no.PORT + " " +
+		noseq + " " +
+		"1" + " " +
+		"HELLO" + "\"" +
+		" para " + DESTINY_HOST + ":" + DESTINY_PORT)
 
-	if status {
-		fmt.Println("\tEnvio feito com sucesso: " +
-			ORIGIN_HOST + ":" +
-			ORIGIN_PORT + " " +
-			NOSEQ + " " +
-			TTL + " " +
-			MESSAGE)
-		return true
-	} else {
-		fmt.Println("Não foi possível fazer a comunicação com: " + HOST + ":" + PORT)
+	message, status := consumeEndpoint(url)
+
+	if !status {
+		fmt.Println("Não foi possível fazer a comunicação com: " + DESTINY_HOST + ":" + DESTINY_PORT)
+		fmt.Println("Motivo: " + message)
 		return false
 	}
+
+	fmt.Println("\tEnvio feito com sucesso: " +
+		no.HOST + ":" +
+		no.PORT + " " +
+		noseq + " " +
+		"1")
+	return true
 
 }
 
 func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
+
 	/* TODO: implementar a requisição da chave para todos os vizinhos
 	   Returned values: _status_ => se achou o não a chave
 						_key_ => valor da chave, -1 se não for encontrada
 	*/
 
 	fmt.Println("Mandando um searchFlooding")
+
 	return true, 1
+
 }
 
 func SearchRandomWalk(_key_ string) (_status_ bool, _value_ int) {
+
 	return true, 1
 }
 
 func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
+
 	return true, 1
-}
-
-func bye(uri string) bool {
-	resp, err := http.Get("http://" + uri + "/bye")
-	if err != nil {
-		fmt.Println("Erro ao dizer xau:", err)
-		return false
-	}
-	defer resp.Body.Close()
-
-	fmt.Println("Response status:", resp.Status)
-	return true
 }
 
 func consumeEndpoint(url string) (string, bool) {
@@ -117,6 +122,10 @@ func consumeEndpoint(url string) (string, bool) {
 
 	if err != nil {
 		return "Não foi possível estabelecer a conexão com " + url, false
+	}
+
+	if resp.StatusCode == 404 {
+		return "404, recurso não encontrado", false
 	}
 
 	var message string
