@@ -56,7 +56,7 @@ func SearchInDepth(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func InitServer(PORT string) {
+func InitServer(HOST string, PORT string) {
 
 	http.HandleFunc("/hello/?host=host&port=port&noseq=noseq&ttl=ttl&message=message", Hello)
 	http.HandleFunc("/SearchFlooding", SearchFlooding)
@@ -64,5 +64,5 @@ func InitServer(PORT string) {
 	http.HandleFunc("/SearchInDepth", SearchInDepth)
 
 	fmt.Printf("Escutando na porta %s\n", PORT)
-	http.ListenAndServe(PORT, nil)
+	http.ListenAndServe(HOST+":"+PORT, nil)
 }

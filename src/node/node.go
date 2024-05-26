@@ -42,3 +42,16 @@ func AddNeighbour(no *No, _HOST string, _PORT string) {
 func IncrementNoSeq(no *No) {
 	no.NoSeq++
 }
+
+func GenerateNeighboursList(data []byte) []*Vizinho {
+	arr := strings.Split(string(data), "\n")
+	listaVizinhos := make([]*Vizinho, 0)
+	for _, vizinho := range arr {
+		listaVizinhos = append(listaVizinhos, &Vizinho{
+			HOST: strings.Split(vizinho, ":")[0],
+			PORT: strings.Split(vizinho, ":")[1]})
+	}
+
+	return listaVizinhos
+
+}

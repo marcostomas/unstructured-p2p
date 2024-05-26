@@ -21,8 +21,8 @@ func imprimeEstadoNo(noh *node.No, mensagem string) {
 	fmt.Println("Port:", noh.PORT)
 	fmt.Println("Pares chave-valor: ", noh.Pares_chave_valor)
 	fmt.Println("Vizinhos: ", noh.Vizinhos)
-	fmt.Println("Mensagens recebidas: ", noh.Mensagens_recebidas)
-	fmt.Println("Número de Sequência: ", noh.seqNum)
+	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
+	fmt.Println("Número de Sequência: ", noh.NoSeq)
 
 	fmt.Printf("\n\n\n")
 }
@@ -49,12 +49,9 @@ func lerArquivo(nomeArquivo string) ([]byte, bool) {
 func verificaArgs(args []string) (int, bool) {
 	lenArgs := len(args)
 
-	fmt.Println("------------------------------------")
-	fmt.Println("Fazendo verificação da quantidade de argumentos...")
-
-	if lenArgs > 0 || lenArgs < 5 {
+	if lenArgs > 0 && lenArgs < 5 {
 		fmt.Println("Validação OK!")
-		fmt.Printf("Argumentos: %s\n\n", args)
+		fmt.Printf("Argumentos: %s\n", args)
 		return lenArgs, true
 	}
 
@@ -70,11 +67,11 @@ func extraiArgs(args []string, nArgs int) (string, string, string) {
 	}
 
 	if nArgs == 3 {
-		return args[2], args[2], ""
+		return args[1], args[2], ""
 	}
 
 	if nArgs == 2 {
-		return args[2], "", ""
+		return args[1], "", ""
 	}
 
 	return "", "", ""
@@ -82,24 +79,13 @@ func extraiArgs(args []string, nArgs int) (string, string, string) {
 }
 
 func getEnderecoPorta(url string) (string, string) {
-
 	enderecoCompleto := strings.Split(url, ":")
 	endereco, porta := enderecoCompleto[0], enderecoCompleto[1]
 
 	return endereco, porta
 }
 
-func GetHOST(address string) string {
-	return strings.Split(address, ":")[0]
-}
-
-func GetPORT(address string) string {
-	return strings.Split(address, ":")[1]
-}
-
-func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) []string {
-
-	var vizinhosAtivos = make([]string, 0)
+func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) {
 
 	for _, vizinho := range vizinhos {
 		time.Sleep(1000 * time.Millisecond)
@@ -110,8 +96,6 @@ func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) []string {
 			node.AddNeighbour(no, vizinho.HOST, vizinho.PORT)
 		}
 	}
-
-	return vizinhosAtivos
 }
 
 func exibeMenu(no *node.No) {
@@ -160,54 +144,46 @@ func main() {
 	args := os.Args
 	nArgs, check_args := verificaArgs(args)
 
+	// Não precisa mais por causa do exit
 	if !check_args {
 		os.Exit(1)
 	}
-
 	address, arqVizinhos, arqParesChaveValor := extraiArgs(args, nArgs)
 
-	var vizinhos string
+	HOST := strings.Split(address, ":")[0]
 
-	if nArgs >= 3 {
-		data, status := lerArquivo(arqVizinhos)
-		vizinhos = string(data)
-		if !status {
-			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
-		}
-	}
+	PORT := strings.Split(address, ":")[1]
 
-	var paresChaveValor string
-
-	if nArgs >= 4 {
-		data, status := lerArquivo(arqParesChaveValor)
-		paresChaveValor = string(data)
-		if !status {
-			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
-		}
-
-	}
-
-	fmt.Println(paresChaveValor)
-
-	HOST := GetHOST(address)
-
-	PORT := GetPORT(address)
-
-	no := node.NewNo(HOST,
-		PORT)
-
-	go server.InitServer(PORT)
+	noh := node.NewNo(HOST, PORT)
+	go server.InitServer(noh.HOST, noh.PORT)
 
 	time.Sleep(5000 * time.Millisecond)
 
-	var nosVizinhos []string
-
+	imprimeEstadoNo(noh, "1")
 	// Envia HELLO para confirmar a existência do vizinho
 	if nArgs > 2 {
-		nosVizinhos = comunicarVizinhos(string(vizinhos))
+		data, status := lerArquivo(arqVizinhos)
+		if !status {
+			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
+		}
+		listaVizinhos := node.GenerateNeighboursList(data)
+		comunicarVizinhos(listaVizinhos, noh)
 	}
 
-	fmt.Println(nosVizinhos)
+	imprimeEstadoNo(noh, "2")
 
-	exibeMenu(no)
+	if nArgs == 4 {
+		data, status := lerArquivo(arqParesChaveValor)
+		if !status {
+			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
+		}
+		arr := strings.Split(string(data), "\n")
+		for _, pair := range arr {
+			node.AddKey(pair, noh)
+		}
+	}
+
+	imprimeEstadoNo(noh, "3")
+
+	exibeMenu(noh)
 }
