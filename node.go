@@ -1,33 +1,32 @@
 package main
 
-import (
-	"strings"
-)
+import "strings"
 
 type no struct {
-	HOST              string
-	PORT              string
-	seqNo             int
-	pares_chave_valor map[string]string //Par nome e número associado
-	vizinhos          []string          //Endereço:porta
+	pares_chave_valor   map[string]string //Par nome e número associado
+	vizinhos            []string
+	mensagens_recebidas []string
+	seqNum              int
+	HOST                string
+	PORT                string
 }
 
-func newNo(_HOST string,
-	_PORT string,
-	_pares []string,
-	_vizinhos []string) *no {
-	_seqNo := 1
+var node *no
 
-	pares := make(map[string]string)
+func inicializaNode() *no {
+	node = new(no)
+	node.pares_chave_valor = make(map[string]string)
+	node.vizinhos = make([]string, 0)
+	node.mensagens_recebidas = make([]string, 0)
+	node.seqNum = 1 // Primeiro envia a mensagem, depois incrementa o seqNum
+	return node
+}
 
-	for i := 0; i < len(_pares); i++ {
-		pares[strings.Split(_pares[i], " ")[0]] = strings.Split(_pares[i], " ")[1]
+func adicionaChaveDoNo(pares string, noh *no) {
+	paresArr := strings.Split(pares, "\n")
+
+	for _, par := range paresArr {
+		parArr := strings.Split(par, " ")
+		noh.pares_chave_valor[parArr[0]] = parArr[1]
 	}
-
-	return &no{HOST: _HOST,
-		PORT:              _PORT,
-		seqNo:             _seqNo,
-		pares_chave_valor: pares,
-		vizinhos:          _vizinhos}
-
 }

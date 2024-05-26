@@ -9,12 +9,12 @@
 
 | Feito? | Tarefa                                            | Responsável | Prazo |
 | ------ | ------------------------------------------------- | ----------- | ----- |
-| [ ]    | Inicialização                                     | Marcos      | 19/05 |
-| [ ]    | Menu, controle de comando, alteração de TTL, sair | Marcos      | 19/05 |
+| [X]    | Inicialização                                     | Marcos      | 19/05 |
+| [X]    | Menu, controle de comando, alteração de TTL, sair | Marcos      | 19/05 |
 | [ ]    | Listar vizinhos                                   | Rafael      | 19/05 |
 | [ ]    | Hello                                             | Rafael      | 19/05 |
-| [ ]    | Search (flooding)                                 |             |       |
-| [ ]    | Search (random walk)                              |             |       |
+| [ ]    | Search (flooding)                                 | Marcos      | 29/05 |
+| [ ]    | Search (random walk)                              | Rafael      | 29/05 |
 | [ ]    | Search (busca em profundidade)                    |             |       |
 | [ ]    | Estatísticas                                      |             |       |
 | [ ]    | Relatório                                         |             |       |
@@ -23,11 +23,11 @@
 
 Para cada busca teremos dois endpoints, um para pedir que o próximo nó verifique em sua tabela interna; e o outro para comunicar uma chave encontrada.
 
-Busca por flooding: /EncontradoFL, /BuscarFL
-Busca por random walk: /EncontradoRW, BuscarRW
-Busca por profundidade: /EncontradoBP, BuscarBP
-Hello
-Bye
+- Busca por flooding: /EncontradoFL, /BuscarFL
+- Busca por random walk: /EncontradoRW, BuscarRW
+- Busca por profundidade: /EncontradoBP, BuscarBP
+- Hello
+- Bye
 
 Total de 8 endpoints
 
@@ -47,16 +47,21 @@ Total de 8 endpoints
 ### /Buscar\*
 
 Método: `GET`
+
 Body: recebe uma mensagem do tipo `<ORIGIN> <SEQNO> <TTL> SEARCH <MODE> <LAST_HOP_PORT> <KEY> <HOP_COUNT>\n`
+
 Retorno: `<MODE>_OK`, ao receber uma mensagem válida.
 
 Imprime na tela: `Encaminhando mensagem "<ORIGIN> <SEQNO> <TTL> <KEY>" para <NEIGH>`. Pode ser implementado no cliente também
+
 Imprime na tela 2: `Envio feito com sucesso: "<NEIGH> <SEQNO> <TTL> <KEY>"`. Este aparece apenas quando `<NEIGH>` confirma o recebimento da mensagem. Pode ser implementado no cliente também.
 
 ### /Encontrado\*
 
 Método: `GET`
+
 Body: receby uma mensagem do tipo `<ORIGIN> <SEQNO> <TTL> VAL <MODE> <KEY> <VALUE> <HOP_COUNT>`
+
 Retorna: `TRUE`, ao receber uma mensagem válida.
 
 Imprime na tela: `Valor encontrado! Chave: <KEY> valor: <VALOR>`
@@ -66,12 +71,15 @@ Imprime na tela: `Valor encontrado! Chave: <KEY> valor: <VALOR>`
 ### /Hello
 
 Método: `GET`
+
 Body: mensagem do tipo `<ORIGIN> <SEQNO> <TTL> HELLO`
+
 Retorno: `TRUE`, se o TTL é igual a `1`
 
 Imprime na tela: `Mensagem recebida: "<ORIGIN> <SEQNO> <TTL> HELLO"`
 
 1: `Adicionando vizinho na tabela: <ORIGIN>`
+
 2: `Vizinho já está na tabela: <ORIGIN>`
 
 - TTL de mensagens enviadas para este endpoint devem ser igual a `1`
@@ -80,7 +88,9 @@ Imprime na tela: `Mensagem recebida: "<ORIGIN> <SEQNO> <TTL> HELLO"`
 ### /Bye
 
 Método: `GET`
+
 Body: mensagem do tipo `<ORIGIN> <SEQNO> <TTL> BYE`
+
 Retorno: `TRUE`
 
 Imprime na tela: `Mensagem recebida: "<ORIGIN> <SEQNO> <TTL> BYE"`

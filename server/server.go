@@ -35,26 +35,17 @@ func SearchFlooding(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {
+func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {}
 
-}
+func SearchInDepth(w http.ResponseWriter, req *http.Request) {}
 
-func SearchInDepth(w http.ResponseWriter, req *http.Request) {
-
-}
-
-// urlStr := "https://example.com/?product=shirt&color=blue&newuser&size=m"
-// myUrl, _ := url.Parse(urlStr)
-// params, _ := url.ParseQuery(myUrl.RawQuery)
-// fmt.Println(params)
-
-func InitServer(PORT string) {
+func InitServer(HOST string, PORT string) {
 
 	http.HandleFunc("/hello/?host=host&port=port&noseq=noseq&ttl=ttl&message=message", Hello)
 	http.HandleFunc("/SearchFlooding", SearchFlooding)
 	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
 	http.HandleFunc("/SearchInDepth", SearchInDepth)
 
+	http.ListenAndServe(HOST+":"+PORT, nil)
 	fmt.Printf("Escutando na porta %s\n", PORT)
-	http.ListenAndServe(PORT, nil)
 }
