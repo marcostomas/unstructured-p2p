@@ -5,28 +5,15 @@ import (
 	"net/http"
 )
 
-type vizinho struct {
-	HOST string
-	PORT string
-}
-
-type no struct {
-	HOST              string
-	PORT              string
-	seqNo             int
-	pares_chave_valor map[string]string //Par nome e número associado
-	vizinhos          []*vizinho
-}
-
 func Hello(w http.ResponseWriter, req *http.Request) {
 
-	url := req.URL.Query()
+	params := req.URL.Query()
 
-	HOST := url.Get("host")
-	PORT := url.Get("port")
-	NOSEQ := url.Get("ttl")
-	TTL := url.Get("ttl")
-	MESSAGE := url.Get("message")
+	HOST := params.Get("host")
+	PORT := params.Get("port")
+	NOSEQ := params.Get("noseq")
+	TTL := params.Get("ttl")
+	MESSAGE := params.Get("message")
 
 	fmt.Println("Mensagem recebida: " +
 		HOST + ":" +
@@ -58,7 +45,7 @@ func SearchInDepth(w http.ResponseWriter, req *http.Request) {
 
 func InitServer(HOST string, PORT string) {
 
-	http.HandleFunc("/hello/?host=host&port=port&noseq=noseq&ttl=ttl&message=message", Hello)
+	http.HandleFunc("/Hello", Hello)
 	http.HandleFunc("/SearchFlooding", SearchFlooding)
 	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
 	http.HandleFunc("/SearchInDepth", SearchInDepth)

@@ -14,17 +14,31 @@ import (
 var TTL = 100
 
 func imprimeEstadoNo(noh *node.No, mensagem string) {
-	fmt.Printf("\n\n\n\n")
+	fmt.Printf("\n")
 	fmt.Printf("////////////////////////// Estado do nó - %s ///////////////////////////////\n", mensagem)
 
-	fmt.Println("Host:", noh.HOST)
-	fmt.Println("Port:", noh.PORT)
-	fmt.Println("Pares chave-valor: ", noh.Pares_chave_valor)
-	fmt.Println("Vizinhos: ", noh.Vizinhos)
+	fmt.Println("HOST: ", noh.HOST)
+	fmt.Println("PORT: ", noh.PORT)
+	fmt.Println("Pares chave-valor: [")
+
+	for key, value := range noh.Pares_chave_valor {
+		fmt.Println("\t\t" + key + " " + value)
+	}
+
+	fmt.Println("]")
+
+	fmt.Println("Vizinhos: [")
+
+	for _, vizinho := range noh.Vizinhos {
+		fmt.Println("\t\t" + vizinho.HOST + ":" + vizinho.PORT)
+	}
+
+	fmt.Println("]")
+
 	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
 	fmt.Println("Número de Sequência: ", noh.NoSeq)
 
-	fmt.Printf("\n\n\n")
+	fmt.Printf("\n")
 }
 
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
@@ -144,15 +158,18 @@ func main() {
 	args := os.Args
 	nArgs, check_args := verificaArgs(args)
 
-	// Não precisa mais por causa do exit
 	if !check_args {
 		os.Exit(1)
 	}
+
 	address, arqVizinhos, arqParesChaveValor := extraiArgs(args, nArgs)
 
 	HOST := strings.Split(address, ":")[0]
 
 	PORT := strings.Split(address, ":")[1]
+
+	fmt.Printf("---------------------------------------\n")
+	fmt.Printf("Inicializando nó...\n")
 
 	noh := node.NewNo(HOST, PORT)
 	go server.InitServer(noh.HOST, noh.PORT)
@@ -167,6 +184,7 @@ func main() {
 			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
 		}
 		listaVizinhos := node.GenerateNeighboursList(data)
+		fmt.Printf("Tentando adicionar vizinhos na tabela...\n")
 		comunicarVizinhos(listaVizinhos, noh)
 	}
 
@@ -177,6 +195,7 @@ func main() {
 		if !status {
 			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
 		}
+		fmt.Printf("Tentando adicionar pares chave valor na tabela...\n")
 		arr := strings.Split(string(data), "\n")
 		for _, pair := range arr {
 			node.AddKey(pair, noh)

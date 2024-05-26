@@ -57,7 +57,7 @@ func Hello(DESTINY_HOST string,
 		DESTINY_HOST +
 		":" +
 		DESTINY_PORT +
-		"/hello/?" +
+		"/Hello?" +
 		"host=" + no.HOST +
 		"&port=" + no.PORT +
 		"&noseq=" + noseq +
@@ -74,10 +74,11 @@ func Hello(DESTINY_HOST string,
 		"HELLO" + "\"" +
 		" para " + DESTINY_HOST + ":" + DESTINY_PORT)
 
-	_, status := consumeEndpoint(url)
+	message, status := consumeEndpoint(url)
 
 	if !status {
 		fmt.Println("Não foi possível fazer a comunicação com: " + DESTINY_HOST + ":" + DESTINY_PORT)
+		fmt.Println("Motivo: " + message)
 		return false
 	}
 
@@ -121,6 +122,10 @@ func consumeEndpoint(url string) (string, bool) {
 
 	if err != nil {
 		return "Não foi possível estabelecer a conexão com " + url, false
+	}
+
+	if resp.StatusCode == 404 {
+		return "404, recurso não encontrado", false
 	}
 
 	var message string
