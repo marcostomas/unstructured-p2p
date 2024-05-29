@@ -1,9 +1,53 @@
 package server
 
 import (
+	"UP2P/node"
+	"UP2P/utils"
+	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
+	"strconv"
 )
+
+var NO *node.No
+
+var count int = 4
+
+func imprimeEstadoNo(noh *node.No, count int) {
+	fmt.Printf("\n")
+	fmt.Printf("////////////////////////// Estado do nó - %d ///////////////////////////////\n", count)
+
+	fmt.Println("HOST: ", noh.HOST)
+	fmt.Println("PORT: ", noh.PORT)
+	fmt.Println("Pares chave-valor: [")
+
+	for key, value := range noh.Pares_chave_valor {
+		fmt.Println("\t\t" + key + " " + value)
+	}
+
+	fmt.Println("]")
+
+	fmt.Println("Vizinhos: [")
+
+	for _, vizinho := range noh.Vizinhos {
+		fmt.Println("\t\t" + vizinho.HOST + ":" + vizinho.PORT)
+	}
+
+	fmt.Println("]")
+
+	fmt.Printf("Mensagens recebidas: [\n")
+
+	for i, mensagem := range noh.Received_messages {
+		fmt.Printf("\t[%d]: %s\n", i, mensagem)
+	}
+
+	fmt.Printf("]\n")
+
+	fmt.Println("Número de Sequência: ", noh.NoSeq)
+
+	fmt.Printf("\n")
+}
 
 func Hello(w http.ResponseWriter, req *http.Request) {
 
@@ -13,43 +57,126 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 	PORT := params.Get("port")
 	NOSEQ := params.Get("noseq")
 	TTL := params.Get("ttl")
-	MESSAGE := params.Get("message")
+	MESSAGE_FIELD := params.Get("message")
 
-	fmt.Println("Mensagem recebida: " +
-		HOST + ":" +
-		PORT + " " +
-		NOSEQ + " " +
-		TTL + " " +
-		MESSAGE)
+	MESSAGE := HOST + " " + PORT + " " + NOSEQ + " " + TTL + " " + MESSAGE_FIELD
+
+	fmt.Println("Mensagem recebida: " + MESSAGE)
+
+	node.AddMessage(MESSAGE, NO)
+
+	imprimeEstadoNo(NO, count)
+
+	count++
 
 	fmt.Fprintf(w, "OK!")
 
 }
 
-func SearchFlooding(w http.ResponseWriter, req *http.Request) {
+func Search(w http.ResponseWriter, req *http.Request) {
 
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
+	message := utils.ExtrairParamsURL(req)
+
+	data, err := json.Marshal(message)
+
+	if err != nil {
+		fmt.Printf(err.Error())
 	}
+
+	fmt.Printf("\nMensagem recebida: \n%s\n", string(data))
+
+	//Cast de string pra int das propriedades TTL e HOP_COUNT
+	TTL, _ := strconv.Atoi(message.TTL)
+	HOP_COUNT, _ := strconv.Atoi(message.HOP_COUNT)
+
+	TTL--
+	HOP_COUNT++
+
+	//Se TTL iguala a zero a mensagem para aqui
+	if TTL == 0 {
+		return
+	}
+
+	//Modifica a mensagem para o próximo envio
+	message.TTL = strconv.Itoa(TTL)
+	message.HOP_COUNT = strconv.Itoa(HOP_COUNT)
+
+	switch message.MODE {
+	case "FL":
+		SearchFlooding(message)
+		break
+	case "RW":
+		SearchRandomWalk(message)
+		break
+	case "DP":
+		SearchInDepth(message)
+		break
+	}
+
 }
 
-func SearchRandomWalk(w http.ResponseWriter, req *http.Request) {
+func SearchFlooding(message *utils.SearchMessage) {
 
 }
 
-func SearchInDepth(w http.ResponseWriter, req *http.Request) {
+func SearchRandomWalk(message *utils.SearchMessage) {
+	value, exists := NO.Pares_chave_valor[message.KEY]
+
+	if exists {
+		fmt.Printf("\nValor da chave %s encontrado: %s!\n", message.KEY, value)
+		url := utils.GerarURLdeDevolucao(message, value, NO)
+		fmt.Printf("%s\n", url)
+		defer http.Get(url)
+		node.IncrementNoSeq(NO)
+		fmt.Printf("NoSeq incrementando: %d\n", NO.NoSeq)
+		return
+	}
+
+	fmt.Printf("A chave %s não foi encontrada na tabela local!", message.KEY)
+
+	random := rand.IntN(len(NO.Vizinhos))
+
+	url := utils.GerarURLdeSearch(message, NO, random)
+
+	fmt.Printf("URL gerada para novo envio: %s\n", url)
+
+	fmt.Println("Encaminhando mensagem para " + NO.Vizinhos[random].HOST + ":" + NO.Vizinhos[random].PORT)
+	defer http.Get(url)
+	node.IncrementNoSeq(NO)
+	fmt.Printf("NoSeq incrementando: %d\n", NO.NoSeq)
 
 }
 
-func InitServer(HOST string, PORT string) {
+func SearchInDepth(message *utils.SearchMessage) {
+
+}
+
+func KeyReceptor(w http.ResponseWriter, req *http.Request) {
+	params := utils.ExtrairParamsURL(req)
+
+	message := params.ORIGIN_HOST + ":" + params.ORIGIN_PORT + " " + params.NOSEQ + " " +
+		params.TTL + " " + "VAL" + " " + params.MODE + " " +
+		params.KEY + " " + params.VALUE + " " + params.HOP_COUNT
+
+	node.AddMessage(message, NO)
+
+	fmt.Printf("Valor encontrado! Chave: %s valor: %s\n", params.KEY, params.VALUE)
+
+}
+
+func InitServer(_NO *node.No) {
 
 	http.HandleFunc("/Hello", Hello)
-	http.HandleFunc("/SearchFlooding", SearchFlooding)
-	http.HandleFunc("/SearchRandomWalk", SearchRandomWalk)
-	http.HandleFunc("/SearchInDepth", SearchInDepth)
+	http.HandleFunc("/Search", Search)
+	http.HandleFunc("/KeyReceptor", KeyReceptor)
 
-	fmt.Printf("Escutando na porta %s\n", PORT)
-	http.ListenAndServe(HOST+":"+PORT, nil)
+	fmt.Println(_NO)
+
+	NO = _NO
+
+	fmt.Println(NO)
+
+	fmt.Printf("Escutando na porta %s\n", _NO.PORT)
+	http.ListenAndServe(_NO.HOST+":"+_NO.PORT, nil)
+
 }

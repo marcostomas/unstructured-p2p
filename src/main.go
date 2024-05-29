@@ -13,9 +13,9 @@ import (
 
 var TTL = 100
 
-func imprimeEstadoNo(noh *node.No, mensagem string) {
+func imprimeEstadoNo(noh *node.No, count int) {
 	fmt.Printf("\n")
-	fmt.Printf("////////////////////////// Estado do nó - %s ///////////////////////////////\n", mensagem)
+	fmt.Printf("////////////////////////// Estado do nó - %d ///////////////////////////////\n", count)
 
 	fmt.Println("HOST: ", noh.HOST)
 	fmt.Println("PORT: ", noh.PORT)
@@ -35,7 +35,12 @@ func imprimeEstadoNo(noh *node.No, mensagem string) {
 
 	fmt.Println("]")
 
-	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
+	fmt.Println("Mensagens recebidas: ")
+
+	for i, mensagem := range noh.Received_messages {
+		fmt.Printf("[%d]: %s", i, mensagem)
+	}
+
 	fmt.Println("Número de Sequência: ", noh.NoSeq)
 
 	fmt.Printf("\n")
@@ -133,15 +138,15 @@ func exibeMenu(no *node.No) {
 
 		switch numero {
 		case 0:
-			client.SearchFlooding("")
+			fmt.Println("Listar vizinhos!")
 		case 1:
-			client.ShowNeighboursToChoose(no)
+			client.ShowNeighbours(no)
 		case 2:
-			fmt.Println("SEARCH (flooding)")
+			client.FindKey(no, client.SearchFlooding)
 		case 3:
-			fmt.Println("SEARCH (random walk)")
+			client.FindKey(no, client.SearchRandomWalk)
 		case 4:
-			fmt.Println("SEARCH (busca em profundidade)")
+			client.FindKey(no, client.SearchInDepth)
 		case 5:
 			fmt.Println("Estatísticas")
 		case 6:
@@ -172,11 +177,12 @@ func main() {
 	fmt.Printf("Inicializando nó...\n")
 
 	noh := node.NewNo(HOST, PORT)
-	go server.InitServer(noh.HOST, noh.PORT)
+	fmt.Println(noh)
+	go server.InitServer(noh)
 
 	time.Sleep(5000 * time.Millisecond)
 
-	imprimeEstadoNo(noh, "1")
+	imprimeEstadoNo(noh, 1)
 	// Envia HELLO para confirmar a existência do vizinho
 	if nArgs > 2 {
 		data, status := lerArquivo(arqVizinhos)
@@ -188,7 +194,7 @@ func main() {
 		comunicarVizinhos(listaVizinhos, noh)
 	}
 
-	imprimeEstadoNo(noh, "2")
+	imprimeEstadoNo(noh, 2)
 
 	if nArgs == 4 {
 		data, status := lerArquivo(arqParesChaveValor)
@@ -202,7 +208,7 @@ func main() {
 		}
 	}
 
-	imprimeEstadoNo(noh, "3")
+	imprimeEstadoNo(noh, 3)
 
 	exibeMenu(noh)
 }

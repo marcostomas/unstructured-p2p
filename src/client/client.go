@@ -2,8 +2,10 @@ package client
 
 import (
 	"UP2P/node"
+	"UP2P/utils"
 	"bufio"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,7 +23,7 @@ func ListAllNeighbours() [][]string {
 
 }
 
-func ShowNeighboursToChoose(no *node.No) {
+func ShowNeighbours(no *node.No) {
 
 	vizinhos := no.Vizinhos
 
@@ -79,6 +81,7 @@ func Hello(DESTINY_HOST string,
 	if !status {
 		fmt.Println("Não foi possível fazer a comunicação com: " + DESTINY_HOST + ":" + DESTINY_PORT)
 		fmt.Println("Motivo: " + message)
+
 		return false
 	}
 
@@ -87,31 +90,49 @@ func Hello(DESTINY_HOST string,
 		no.PORT + " " +
 		noseq + " " +
 		"1")
+
 	return true
 
 }
 
-func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
+func FindKey(no *node.No, f func(string, *node.No)) {
 
-	/* TODO: implementar a requisição da chave para todos os vizinhos
-	   Returned values: _status_ => se achou o não a chave
-						_key_ => valor da chave, -1 se não for encontrada
-	*/
+	fmt.Printf("Digite a chave a ser buscada\n")
 
-	fmt.Println("Mandando um searchFlooding")
+	var KEY string
 
-	return true, 1
+	fmt.Scanln(&KEY)
+
+	value, existsLocally := no.Pares_chave_valor[KEY]
+
+	if existsLocally {
+		fmt.Printf("Valor na tabela local!\n")
+		fmt.Printf("\tchave: %s valor: %s\n", KEY, value)
+		return
+	}
+
+	f(KEY, no)
 
 }
 
-func SearchRandomWalk(_key_ string) (_status_ bool, _value_ int) {
+func SearchFlooding(KEY string, NO *node.No) {
 
-	return true, 1
 }
 
-func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
+func SearchRandomWalk(KEY string, NO *node.No) {
+	random := rand.IntN(len(NO.Vizinhos))
 
-	return true, 1
+	message := utils.GerarMensagemDeBusca(NO, "100", "RW", KEY)
+
+	url := utils.GerarURLdeSearch(message, NO, random)
+
+	http.Get(url)
+
+	node.IncrementNoSeq(NO)
+}
+
+func SearchInDepth(KEY string, NO *node.No) {
+
 }
 
 func consumeEndpoint(url string) (string, bool) {

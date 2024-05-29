@@ -43,6 +43,10 @@ func IncrementNoSeq(no *No) {
 	no.NoSeq++
 }
 
+func AddMessage(MESSAGE string, NO *No) {
+	NO.Received_messages = append(NO.Received_messages, MESSAGE)
+}
+
 func GenerateNeighboursList(data []byte) []*Vizinho {
 	arr := strings.Split(string(data), "\n")
 	listaVizinhos := make([]*Vizinho, 0)
