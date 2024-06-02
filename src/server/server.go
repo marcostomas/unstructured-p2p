@@ -1,6 +1,7 @@
 package server
 
 import (
+	"UP2P/client"
 	"UP2P/node"
 	"UP2P/utils"
 	"encoding/json"
@@ -8,46 +9,12 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 var NO *node.No
 
 var count int = 4
-
-func imprimeEstadoNo(noh *node.No, count int) {
-	fmt.Printf("\n")
-	fmt.Printf("////////////////////////// Estado do nó - %d ///////////////////////////////\n", count)
-
-	fmt.Println("HOST: ", noh.HOST)
-	fmt.Println("PORT: ", noh.PORT)
-	fmt.Println("Pares chave-valor: [")
-
-	for key, value := range noh.Pares_chave_valor {
-		fmt.Println("\t\t" + key + " " + value)
-	}
-
-	fmt.Println("]")
-
-	fmt.Println("Vizinhos: [")
-
-	for _, vizinho := range noh.Vizinhos {
-		fmt.Println("\t\t" + vizinho.HOST + ":" + vizinho.PORT)
-	}
-
-	fmt.Println("]")
-
-	fmt.Printf("Mensagens recebidas: [\n")
-
-	for i, mensagem := range noh.Received_messages {
-		fmt.Printf("\t[%d]: %s\n", i, mensagem)
-	}
-
-	fmt.Printf("]\n")
-
-	fmt.Println("Número de Sequência: ", noh.NoSeq)
-
-	fmt.Printf("\n")
-}
 
 func Hello(w http.ResponseWriter, req *http.Request) {
 
@@ -65,7 +32,7 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 
 	node.AddMessage(MESSAGE, NO)
 
-	imprimeEstadoNo(NO, count)
+	node.PrintNode(NO, count)
 
 	count++
 
@@ -94,6 +61,7 @@ func Search(w http.ResponseWriter, req *http.Request) {
 
 	//Se TTL iguala a zero a mensagem para aqui
 	if TTL == 0 {
+		fmt.Println("TTL igual a zero, descartando mensagem")
 		return
 	}
 
@@ -101,9 +69,11 @@ func Search(w http.ResponseWriter, req *http.Request) {
 	message.TTL = strconv.Itoa(TTL)
 	message.HOP_COUNT = strconv.Itoa(HOP_COUNT)
 
+	req_host := strings.Split(req.RemoteAddr, ":")[0]
+
 	switch message.MODE {
 	case "FL":
-		SearchFlooding(message)
+		SearchFlooding(message, req_host)
 		break
 	case "RW":
 		SearchRandomWalk(message)
@@ -115,8 +85,30 @@ func Search(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func SearchFlooding(message *utils.SearchMessage) {
+func SearchFlooding(message *utils.SearchMessage, req_host string) {
+	msg_received := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message), NO)
 
+	if msg_received {
+		fmt.Println("Mensagem já recebida!")
+		return
+	}
+
+	node.AddMessage(utils.GenerateStringSearchMessage(message), NO)
+
+	value, exists := NO.Pares_chave_valor[message.KEY]
+
+	if exists {
+		fmt.Println("Chave encontrada!")
+		return_url := utils.GerarURLdeDevolucao(message, value, NO)
+		defer http.Get(return_url)
+		node.IncrementNoSeq(NO)
+		return
+	}
+
+	fmt.Printf("A chave %s não foi encontrada na tabela local!", message.KEY)
+
+	client.SearchFlooding(message.KEY, NO, fmt.Sprint(NO.TTL),
+		node.RemoveNeighbour(req_host, NO.PORT, NO))
 }
 
 func SearchRandomWalk(message *utils.SearchMessage) {
@@ -132,7 +124,7 @@ func SearchRandomWalk(message *utils.SearchMessage) {
 		return
 	}
 
-	fmt.Printf("A chave %s não foi encontrada na tabela local!", message.KEY)
+	fmt.Println("A chave %s não foi encontrada na tabela local!", message.KEY)
 
 	random := rand.IntN(len(NO.Vizinhos))
 
