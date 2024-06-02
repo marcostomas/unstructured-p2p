@@ -13,6 +13,10 @@ import (
 
 var TTL = 100
 
+var SEARCH_FL = client.SearchFlooding
+var SEARCH_RW = client.SearchRandomWalk
+var SEARCH_DP = client.SearchInDepth
+
 func imprimeEstadoNo(noh *node.No, count int) {
 	fmt.Printf("\n")
 	fmt.Printf("////////////////////////// Estado do nó - %d ///////////////////////////////\n", count)
@@ -142,11 +146,11 @@ func exibeMenu(no *node.No) {
 		case 1:
 			client.ShowNeighbours(no)
 		case 2:
-			client.FindKey(no, client.SearchFlooding)
+			client.FindKey(no, SEARCH_FL)
 		case 3:
-			client.FindKey(no, client.SearchRandomWalk)
+			client.FindKey(no, SEARCH_RW)
 		case 4:
-			client.FindKey(no, client.SearchInDepth)
+			client.FindKey(no, SEARCH_DP)
 		case 5:
 			fmt.Println("Estatísticas")
 		case 6:
@@ -177,7 +181,6 @@ func main() {
 	fmt.Printf("Inicializando nó...\n")
 
 	noh := node.NewNo(HOST, PORT)
-	fmt.Println(noh)
 	go server.InitServer(noh)
 
 	time.Sleep(5000 * time.Millisecond)
