@@ -113,20 +113,30 @@ func FindKey(no *node.No, f SearchMethod) {
 		return
 	}
 
-	f(KEY, no, "100")
+	f(KEY, no, string(no.TTL))
 
 }
 
 func SearchFlooding(KEY string, NO *node.No, TTL string) {
 
 	message := utils.GerarMensagemDeBusca(NO, TTL, "FL", KEY)
+	sMsg := fmt.Sprintf("%s:%s %s %s %s %s %s %s",
+		message.ORIGIN_HOST,
+		message.ORIGIN_PORT,
+		message.NOSEQ,
+		message.TTL,
+		message.ACTION,
+		message.MODE,
+		message.LAST_HOP_PORT,
+		message.KEY)
 
-	for index, vizinho := range NO.Vizinhos {
+	node.AddMessage(sMsg, NO)
+	node.IncrementNoSeq(NO)
 
-		url := utils.GerarURLdeSearch(message)
-
+	for index, _ := range NO.Vizinhos {
+		url := utils.GerarURLdeSearch(message, NO, index)
+		http.Get(url)
 	}
-
 }
 
 func SearchRandomWalk(KEY string, NO *node.No, TTL string) {

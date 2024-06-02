@@ -17,6 +17,7 @@ type No struct {
 	Received_messages []string
 	Pares_chave_valor map[string]string //Par nome e número associado
 	Vizinhos          []*Vizinho
+	TTL               int
 }
 
 func NewNo(_HOST string, _PORT string) *No {
@@ -28,6 +29,7 @@ func NewNo(_HOST string, _PORT string) *No {
 		Pares_chave_valor: map[string]string{},
 		Vizinhos:          make([]*Vizinho, 0),
 		Received_messages: make([]string, 0),
+		TTL:               1,
 	}
 }
 
@@ -76,4 +78,18 @@ func PrintNode(noh *No, count int) {
 	fmt.Println("Número de Sequência: ", noh.NoSeq)
 
 	fmt.Printf("\n")
+}
+
+func FindReceivedMessage(message string, NO *No) bool {
+	for _, msg := range NO.Received_messages {
+		if msg == message {
+			return true
+		}
+	}
+	return false
+}
+
+func ChangeTTL(no *No) {
+	fmt.Println("Digite o novo valor de TTL")
+	fmt.Scanln(&no.TTL)
 }

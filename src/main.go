@@ -11,44 +11,9 @@ import (
 	"time"
 )
 
-var TTL = 100
-
 var SEARCH_FL = client.SearchFlooding
 var SEARCH_RW = client.SearchRandomWalk
 var SEARCH_DP = client.SearchInDepth
-
-func imprimeEstadoNo(noh *node.No, count int) {
-	fmt.Printf("\n")
-	fmt.Printf("////////////////////////// Estado do nó - %d ///////////////////////////////\n", count)
-
-	fmt.Println("HOST: ", noh.HOST)
-	fmt.Println("PORT: ", noh.PORT)
-	fmt.Println("Pares chave-valor: [")
-
-	for key, value := range noh.Pares_chave_valor {
-		fmt.Println("\t\t" + key + " " + value)
-	}
-
-	fmt.Println("]")
-
-	fmt.Println("Vizinhos: [")
-
-	for _, vizinho := range noh.Vizinhos {
-		fmt.Println("\t\t" + vizinho.HOST + ":" + vizinho.PORT)
-	}
-
-	fmt.Println("]")
-
-	fmt.Println("Mensagens recebidas: ")
-
-	for i, mensagem := range noh.Received_messages {
-		fmt.Printf("[%d]: %s", i, mensagem)
-	}
-
-	fmt.Println("Número de Sequência: ", noh.NoSeq)
-
-	fmt.Printf("\n")
-}
 
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
@@ -115,7 +80,7 @@ func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) {
 }
 
 func exibeMenu(no *node.No) {
-
+	fmt.Println("")
 	fmt.Println("Escolha o comando")
 	fmt.Println("[0] Listar vizinhos")
 	fmt.Println("[1] Hello")
@@ -147,7 +112,7 @@ func exibeMenu(no *node.No) {
 		case 5:
 			fmt.Println("Estatísticas")
 		case 6:
-			fmt.Println("Alterar valor padrão de TTL")
+			node.ChangeTTL(no)
 		case 9:
 			os.Exit(0)
 		}

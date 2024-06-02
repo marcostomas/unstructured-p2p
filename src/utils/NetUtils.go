@@ -2,6 +2,7 @@ package utils
 
 import (
 	"UP2P/node"
+	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -36,7 +37,6 @@ func GerarMensagemDeBusca(NO *node.No, _TTL string, _MODE string, _KEY string) *
 		VALUE:         "",
 		HOP_COUNT:     "1",
 	}
-
 }
 
 func ExtrairParamsURL(req *http.Request) *SearchMessage {
@@ -87,7 +87,7 @@ func GerarURLdeSearch(
 		"seqno=" + noseq + "&" +
 		"ttl=" + message.TTL + "&" +
 		"action=" + "search" + "&" +
-		"mode=" + "RW" + "&" +
+		"mode=" + message.MODE + "&" +
 		"last_hop_port=" + NO.PORT + "&" +
 		"key=" + message.KEY + "&" +
 		"hop_count=" + "1"
@@ -100,6 +100,7 @@ func GerarURLdeDevolucao(
 
 	// Converter de int para string
 	noseq := strconv.Itoa(NO.NoSeq)
+	ttl := strconv.Itoa(NO.TTL)
 
 	return "http://" +
 		message.ORIGIN_HOST + ":" +
@@ -108,10 +109,16 @@ func GerarURLdeDevolucao(
 		"host=" + NO.HOST + "&" +
 		"port=" + NO.PORT + "&" +
 		"seqno=" + noseq + "&" +
-		"ttl=" + message.TTL + "&" +
+		"ttl=" + message.TTL + "&" + // Aqui não deveria ser NO.TTL?
 		"action=" + "VAL" + "&" +
 		"mode=" + message.MODE + "&" +
 		"key=" + message.KEY + "&" +
 		"value=" + VALUE + "&" +
 		"hop_count=" + message.HOP_COUNT
+}
+
+func GenerateStringSearchMessage(message *SearchMessage) string {
+	return fmt.Sprintf("%s:%s %s %s %s %s %s %s %s %s", message.ORIGIN_HOST,
+		message.ORIGIN_PORT, message.NOSEQ, message.TTL, message.ACTION, message.MODE,
+		message.LAST_HOP_PORT, message.KEY, message.VALUE, message.HOP_COUNT)
 }

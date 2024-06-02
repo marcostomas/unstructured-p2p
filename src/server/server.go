@@ -1,6 +1,7 @@
 package server
 
 import (
+	"UP2P/client"
 	"UP2P/node"
 	"UP2P/utils"
 	"encoding/json"
@@ -81,7 +82,29 @@ func Search(w http.ResponseWriter, req *http.Request) {
 }
 
 func SearchFlooding(message *utils.SearchMessage) {
+	msg_received := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message), NO)
 
+	if msg_received {
+		fmt.Println("Mensagem já recebida!")
+		return
+	}
+
+	node.AddMessage(utils.GenerateStringSearchMessage(message), NO)
+
+	value, exists := NO.Pares_chave_valor[message.KEY]
+
+	if exists {
+		fmt.Println("Chave encontrada!")
+		return_url := utils.GerarURLdeDevolucao(message, value, NO)
+		// return_msg := utils.GerarMensagemDeChaveEncontrada(NO, message.MODE, message.KEY, value)
+		defer http.Get(return_url)
+		node.IncrementNoSeq(NO)
+		return
+	}
+
+	fmt.Println("A chave %s não foi encontrada na tabela local!", message.KEY)
+
+	client.SearchFlooding(message.KEY, NO, message.TTL)
 }
 
 func SearchRandomWalk(message *utils.SearchMessage) {
@@ -97,7 +120,7 @@ func SearchRandomWalk(message *utils.SearchMessage) {
 		return
 	}
 
-	fmt.Printf("A chave %s não foi encontrada na tabela local!", message.KEY)
+	fmt.Println("A chave %s não foi encontrada na tabela local!", message.KEY)
 
 	random := rand.IntN(len(NO.Vizinhos))
 
