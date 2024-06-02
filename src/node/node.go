@@ -1,6 +1,9 @@
 package node
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Vizinho struct {
 	HOST string
@@ -16,15 +19,16 @@ type No struct {
 	Vizinhos          []*Vizinho
 }
 
-func NewNo(_HOST string,
-	_PORT string) *No {
+func NewNo(_HOST string, _PORT string) *No {
 
 	return &No{
 		HOST:              _HOST,
 		PORT:              _PORT,
 		NoSeq:             1,
 		Pares_chave_valor: map[string]string{},
-		Vizinhos:          make([]*Vizinho, 0)}
+		Vizinhos:          make([]*Vizinho, 0),
+		Received_messages: make([]string, 0),
+	}
 }
 
 func AddKey(par string, noh *No) {
@@ -58,4 +62,18 @@ func GenerateNeighboursList(data []byte) []*Vizinho {
 
 	return listaVizinhos
 
+}
+
+func PrintNode(noh *No, count int) {
+	fmt.Printf("\n")
+	fmt.Printf("/////////////////// Estado do nó - %d ///////////////////\n", count)
+
+	fmt.Println("HOST: ", noh.HOST)
+	fmt.Println("PORT: ", noh.PORT)
+	fmt.Println("Pares chave-valor: ", noh.Pares_chave_valor)
+	fmt.Println("Vizinhos: ", noh.Vizinhos)
+	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
+	fmt.Println("Número de Sequência: ", noh.NoSeq)
+
+	fmt.Printf("\n")
 }

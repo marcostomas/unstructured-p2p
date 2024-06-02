@@ -13,39 +13,6 @@ import (
 
 var TTL = 100
 
-func imprimeEstadoNo(noh *node.No, count int) {
-	fmt.Printf("\n")
-	fmt.Printf("////////////////////////// Estado do nó - %d ///////////////////////////////\n", count)
-
-	fmt.Println("HOST: ", noh.HOST)
-	fmt.Println("PORT: ", noh.PORT)
-	fmt.Println("Pares chave-valor: [")
-
-	for key, value := range noh.Pares_chave_valor {
-		fmt.Println("\t\t" + key + " " + value)
-	}
-
-	fmt.Println("]")
-
-	fmt.Println("Vizinhos: [")
-
-	for _, vizinho := range noh.Vizinhos {
-		fmt.Println("\t\t" + vizinho.HOST + ":" + vizinho.PORT)
-	}
-
-	fmt.Println("]")
-
-	fmt.Println("Mensagens recebidas: ")
-
-	for i, mensagem := range noh.Received_messages {
-		fmt.Printf("[%d]: %s", i, mensagem)
-	}
-
-	fmt.Println("Número de Sequência: ", noh.NoSeq)
-
-	fmt.Printf("\n")
-}
-
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
 	arquivo, err := os.Open(nomeArquivo)
@@ -95,13 +62,6 @@ func extraiArgs(args []string, nArgs int) (string, string, string) {
 
 	return "", "", ""
 
-}
-
-func getEnderecoPorta(url string) (string, string) {
-	enderecoCompleto := strings.Split(url, ":")
-	endereco, porta := enderecoCompleto[0], enderecoCompleto[1]
-
-	return endereco, porta
 }
 
 func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) {
@@ -170,19 +130,17 @@ func main() {
 	address, arqVizinhos, arqParesChaveValor := extraiArgs(args, nArgs)
 
 	HOST := strings.Split(address, ":")[0]
-
 	PORT := strings.Split(address, ":")[1]
 
 	fmt.Printf("---------------------------------------\n")
 	fmt.Printf("Inicializando nó...\n")
 
 	noh := node.NewNo(HOST, PORT)
-	fmt.Println(noh)
 	go server.InitServer(noh)
 
 	time.Sleep(5000 * time.Millisecond)
 
-	imprimeEstadoNo(noh, 1)
+	node.PrintNode(noh, 1)
 	// Envia HELLO para confirmar a existência do vizinho
 	if nArgs > 2 {
 		data, status := lerArquivo(arqVizinhos)
@@ -194,7 +152,7 @@ func main() {
 		comunicarVizinhos(listaVizinhos, noh)
 	}
 
-	imprimeEstadoNo(noh, 2)
+	node.PrintNode(noh, 2)
 
 	if nArgs == 4 {
 		data, status := lerArquivo(arqParesChaveValor)
@@ -208,7 +166,7 @@ func main() {
 		}
 	}
 
-	imprimeEstadoNo(noh, 3)
+	node.PrintNode(noh, 3)
 
 	exibeMenu(noh)
 }
