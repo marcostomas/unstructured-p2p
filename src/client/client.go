@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+type SearchMethod func(string, *node.No, string)
+
 // Definir funções que o cliente pode executar
 
 func ListAllNeighbours() [][]string {
@@ -95,7 +97,7 @@ func Hello(DESTINY_HOST string,
 
 }
 
-func FindKey(no *node.No, f func(string, *node.No)) {
+func FindKey(no *node.No, f SearchMethod) {
 
 	fmt.Printf("Digite a chave a ser buscada\n")
 
@@ -111,18 +113,26 @@ func FindKey(no *node.No, f func(string, *node.No)) {
 		return
 	}
 
-	f(KEY, no)
+	f(KEY, no, "100")
 
 }
 
-func SearchFlooding(KEY string, NO *node.No) {
+func SearchFlooding(KEY string, NO *node.No, TTL string) {
+
+	message := utils.GerarMensagemDeBusca(NO, TTL, "FL", KEY)
+
+	for index, vizinho := range NO.Vizinhos {
+
+		url := utils.GerarURLdeSearch(message)
+
+	}
 
 }
 
-func SearchRandomWalk(KEY string, NO *node.No) {
+func SearchRandomWalk(KEY string, NO *node.No, TTL string) {
 	random := rand.IntN(len(NO.Vizinhos))
 
-	message := utils.GerarMensagemDeBusca(NO, "100", "RW", KEY)
+	message := utils.GerarMensagemDeBusca(NO, TTL, "RW", KEY)
 
 	url := utils.GerarURLdeSearch(message, NO, random)
 
@@ -131,7 +141,7 @@ func SearchRandomWalk(KEY string, NO *node.No) {
 	node.IncrementNoSeq(NO)
 }
 
-func SearchInDepth(KEY string, NO *node.No) {
+func SearchInDepth(KEY string, NO *node.No, TTL string) {
 
 }
 

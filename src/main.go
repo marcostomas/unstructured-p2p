@@ -13,6 +13,43 @@ import (
 
 var TTL = 100
 
+var SEARCH_FL = client.SearchFlooding
+var SEARCH_RW = client.SearchRandomWalk
+var SEARCH_DP = client.SearchInDepth
+
+func imprimeEstadoNo(noh *node.No, count int) {
+	fmt.Printf("\n")
+	fmt.Printf("////////////////////////// Estado do nó - %d ///////////////////////////////\n", count)
+
+	fmt.Println("HOST: ", noh.HOST)
+	fmt.Println("PORT: ", noh.PORT)
+	fmt.Println("Pares chave-valor: [")
+
+	for key, value := range noh.Pares_chave_valor {
+		fmt.Println("\t\t" + key + " " + value)
+	}
+
+	fmt.Println("]")
+
+	fmt.Println("Vizinhos: [")
+
+	for _, vizinho := range noh.Vizinhos {
+		fmt.Println("\t\t" + vizinho.HOST + ":" + vizinho.PORT)
+	}
+
+	fmt.Println("]")
+
+	fmt.Println("Mensagens recebidas: ")
+
+	for i, mensagem := range noh.Received_messages {
+		fmt.Printf("[%d]: %s", i, mensagem)
+	}
+
+	fmt.Println("Número de Sequência: ", noh.NoSeq)
+
+	fmt.Printf("\n")
+}
+
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
 	arquivo, err := os.Open(nomeArquivo)
@@ -102,11 +139,11 @@ func exibeMenu(no *node.No) {
 		case 1:
 			client.ShowNeighbours(no)
 		case 2:
-			client.FindKey(no, client.SearchFlooding)
+			client.FindKey(no, SEARCH_FL)
 		case 3:
-			client.FindKey(no, client.SearchRandomWalk)
+			client.FindKey(no, SEARCH_RW)
 		case 4:
-			client.FindKey(no, client.SearchInDepth)
+			client.FindKey(no, SEARCH_DP)
 		case 5:
 			fmt.Println("Estatísticas")
 		case 6:
