@@ -87,7 +87,7 @@ func GerarURLdeSearch(
 		"seqno=" + noseq + "&" +
 		"ttl=" + message.TTL + "&" +
 		"action=" + "search" + "&" +
-		"mode=" + "RW" + "&" +
+		"mode=" + message.MODE + "&" +
 		"last_hop_port=" + NO.PORT + "&" +
 		"key=" + message.KEY + "&" +
 		"hop_count=" + "1"
