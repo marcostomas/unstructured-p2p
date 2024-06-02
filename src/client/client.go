@@ -117,7 +117,7 @@ func FindKey(no *node.No, f SearchMethod) {
 
 }
 
-func SearchFlooding(KEY string, NO *node.No, TTL string) {
+func SearchFlooding(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
 
 	message := utils.GerarMensagemDeBusca(NO, TTL, "FL", KEY)
 	sMsg := fmt.Sprintf("%s:%s %s %s %s %s %s %s",
@@ -133,7 +133,7 @@ func SearchFlooding(KEY string, NO *node.No, TTL string) {
 	node.AddMessage(sMsg, NO)
 	node.IncrementNoSeq(NO)
 
-	for index, _ := range NO.Vizinhos {
+	for index, _ := range Vizinhos {
 		url := utils.GerarURLdeSearch(message, NO, index)
 		http.Get(url)
 	}

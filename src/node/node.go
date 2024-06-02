@@ -93,3 +93,17 @@ func ChangeTTL(no *No) {
 	fmt.Println("Digite o novo valor de TTL")
 	fmt.Scanln(&no.TTL)
 }
+
+// Retorna o vizinho que enviou a mensagem para o nó da lista de vizinhos
+func RemoveNeighbour(host string, port string, no *No) []*Vizinho {
+
+	new_neighbours := make([]*Vizinho, len(no.Vizinhos))
+	for _, vizinho := range no.Vizinhos {
+		if vizinho.HOST != host && vizinho.PORT != port {
+			new_neighbours = append(new_neighbours,
+				&Vizinho{HOST: vizinho.HOST, PORT: vizinho.PORT})
+		}
+	}
+
+	return new_neighbours
+}

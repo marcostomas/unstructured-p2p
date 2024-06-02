@@ -109,7 +109,7 @@ func GerarURLdeDevolucao(
 		"host=" + NO.HOST + "&" +
 		"port=" + NO.PORT + "&" +
 		"seqno=" + noseq + "&" +
-		"ttl=" + message.TTL + "&" + // Aqui não deveria ser NO.TTL?
+		"ttl=" + ttl + "&" +
 		"action=" + "VAL" + "&" +
 		"mode=" + message.MODE + "&" +
 		"key=" + message.KEY + "&" +

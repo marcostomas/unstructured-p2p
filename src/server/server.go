@@ -9,6 +9,7 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 var NO *node.No
@@ -60,6 +61,7 @@ func Search(w http.ResponseWriter, req *http.Request) {
 
 	//Se TTL iguala a zero a mensagem para aqui
 	if TTL == 0 {
+		fmt.Println("TTL igual a zero, descartando mensagem")
 		return
 	}
 
@@ -67,9 +69,11 @@ func Search(w http.ResponseWriter, req *http.Request) {
 	message.TTL = strconv.Itoa(TTL)
 	message.HOP_COUNT = strconv.Itoa(HOP_COUNT)
 
+	req_host := strings.Split(req.RemoteAddr, ":")[0]
+
 	switch message.MODE {
 	case "FL":
-		SearchFlooding(message)
+		SearchFlooding(message, req_host)
 		break
 	case "RW":
 		SearchRandomWalk(message)
@@ -81,7 +85,7 @@ func Search(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func SearchFlooding(message *utils.SearchMessage) {
+func SearchFlooding(message *utils.SearchMessage, req_host string) {
 	msg_received := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message), NO)
 
 	if msg_received {
@@ -96,15 +100,15 @@ func SearchFlooding(message *utils.SearchMessage) {
 	if exists {
 		fmt.Println("Chave encontrada!")
 		return_url := utils.GerarURLdeDevolucao(message, value, NO)
-		// return_msg := utils.GerarMensagemDeChaveEncontrada(NO, message.MODE, message.KEY, value)
 		defer http.Get(return_url)
 		node.IncrementNoSeq(NO)
 		return
 	}
 
-	fmt.Println("A chave %s não foi encontrada na tabela local!", message.KEY)
+	fmt.Printf("A chave %s não foi encontrada na tabela local!", message.KEY)
 
-	client.SearchFlooding(message.KEY, NO, message.TTL)
+	client.SearchFlooding(message.KEY, NO, fmt.Sprint(NO.TTL),
+		node.RemoveNeighbour(req_host, NO.PORT, NO))
 }
 
 func SearchRandomWalk(message *utils.SearchMessage) {
