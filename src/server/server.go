@@ -168,7 +168,7 @@ func InitServer(_NO *node.No) {
 
 	fmt.Println(NO)
 
-	fmt.Printf("Escutando na porta %s\n", _NO.PORT)
+	fmt.Printf("Escutando na porta %s:%s\n", _NO.HOST, _NO.PORT)
 	http.ListenAndServe(_NO.HOST+":"+_NO.PORT, nil)
 
 }

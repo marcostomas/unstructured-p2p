@@ -29,7 +29,7 @@ func NewNo(_HOST string, _PORT string) *No {
 		Pares_chave_valor: map[string]string{},
 		Vizinhos:          make([]*Vizinho, 0),
 		Received_messages: make([]string, 0),
-		TTL:               1,
+		TTL:               100,
 	}
 }
 
@@ -73,7 +73,14 @@ func PrintNode(noh *No, count int) {
 	fmt.Println("HOST: ", noh.HOST)
 	fmt.Println("PORT: ", noh.PORT)
 	fmt.Println("Pares chave-valor: ", noh.Pares_chave_valor)
-	fmt.Println("Vizinhos: ", noh.Vizinhos)
+	fmt.Println("Vizinhos: [")
+
+	for _, vizinho := range noh.Vizinhos {
+		fmt.Printf("\t%s:%s\n", vizinho.HOST, vizinho.PORT)
+	}
+
+	fmt.Printf("]\n")
+
 	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
 	fmt.Println("Número de Sequência: ", noh.NoSeq)
 

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type SearchMethod func(string, *node.No, string)
+type SearchMethod func(string, *node.No, string, []*node.Vizinho)
 
 // Definir funções que o cliente pode executar
 
@@ -113,7 +113,7 @@ func FindKey(no *node.No, f SearchMethod) {
 		return
 	}
 
-	f(KEY, no, string(no.TTL))
+	f(KEY, no, strconv.Itoa(no.TTL), no.Vizinhos)
 
 }
 
@@ -139,7 +139,7 @@ func SearchFlooding(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinh
 	}
 }
 
-func SearchRandomWalk(KEY string, NO *node.No, TTL string) {
+func SearchRandomWalk(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
 	random := rand.IntN(len(NO.Vizinhos))
 
 	message := utils.GerarMensagemDeBusca(NO, TTL, "RW", KEY)
@@ -151,7 +151,7 @@ func SearchRandomWalk(KEY string, NO *node.No, TTL string) {
 	node.IncrementNoSeq(NO)
 }
 
-func SearchInDepth(KEY string, NO *node.No, TTL string) {
+func SearchInDepth(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
 
 }
 
