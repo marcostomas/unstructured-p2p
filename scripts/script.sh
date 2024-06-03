@@ -34,7 +34,7 @@ declare -i PORT
 
 HOST=$(ip address | grep -oE "\b192.168.[0-9]{1,3}.[0-9]{1,3}\b" | head -n 1)
 
-for ((i=0; i<n;i++)); do
+for ((i=0; i<2;i++)); do
     PORT=($i+1)
     echo "Criando nó $i"
     gnome-terminal -- bash -c "../src/UP2P '$HOST:500$PORT' '../txts/$topologia/vizinhos[$i].txt' '../txts/$topologia/lista_chave_valor[$i].txt'" bash
