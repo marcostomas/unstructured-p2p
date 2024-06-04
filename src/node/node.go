@@ -1,6 +1,9 @@
 package node
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Vizinho struct {
 	HOST string
@@ -14,17 +17,20 @@ type No struct {
 	Received_messages []string
 	Pares_chave_valor map[string]string //Par nome e número associado
 	Vizinhos          []*Vizinho
+	TTL               int
 }
 
-func NewNo(_HOST string,
-	_PORT string) *No {
+func NewNo(_HOST string, _PORT string) *No {
 
 	return &No{
 		HOST:              _HOST,
 		PORT:              _PORT,
 		NoSeq:             1,
 		Pares_chave_valor: map[string]string{},
-		Vizinhos:          make([]*Vizinho, 0)}
+		Vizinhos:          make([]*Vizinho, 0),
+		Received_messages: make([]string, 0),
+		TTL:               100,
+	}
 }
 
 func AddKey(par string, noh *No) {
@@ -43,6 +49,10 @@ func IncrementNoSeq(no *No) {
 	no.NoSeq++
 }
 
+func AddMessage(MESSAGE string, NO *No) {
+	NO.Received_messages = append(NO.Received_messages, MESSAGE)
+}
+
 func GenerateNeighboursList(data []byte) []*Vizinho {
 	arr := strings.Split(string(data), "\n")
 	listaVizinhos := make([]*Vizinho, 0)
@@ -54,4 +64,60 @@ func GenerateNeighboursList(data []byte) []*Vizinho {
 
 	return listaVizinhos
 
+}
+
+func PrintNode(noh *No, count int) {
+	fmt.Printf("\n")
+	fmt.Printf("/////////////////// Estado do nó - %d ///////////////////\n", count)
+
+	fmt.Println("HOST: ", noh.HOST)
+	fmt.Println("PORT: ", noh.PORT)
+	fmt.Println("Pares chave-valor: ", noh.Pares_chave_valor)
+	fmt.Println("Vizinhos: [")
+
+	for _, vizinho := range noh.Vizinhos {
+		fmt.Printf("\t%s:%s\n", vizinho.HOST, vizinho.PORT)
+	}
+
+	fmt.Printf("]\n")
+
+	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
+	fmt.Println("Número de Sequência: ", noh.NoSeq)
+
+	fmt.Printf("\n")
+}
+
+func FindReceivedMessage(message string, NO *No) bool {
+
+	paramsMsg := strings.Split(message, " ")
+
+	for _, msg := range NO.Received_messages {
+
+		paramsOtherMsg := strings.Split(msg, " ")
+
+		if paramsMsg[0] == paramsOtherMsg[0] &&
+			paramsMsg[1] == paramsOtherMsg[1] {
+			return true
+		}
+	}
+	return false
+}
+
+func ChangeTTL(no *No) {
+	fmt.Println("Digite o novo valor de TTL")
+	fmt.Scanln(&no.TTL)
+}
+
+// Retorna o vizinho que enviou a mensagem para o nó da lista de vizinhos
+func RemoveNeighbour(host string, port string, no *No) []*Vizinho {
+
+	new_neighbours := make([]*Vizinho, len(no.Vizinhos))
+	for _, vizinho := range no.Vizinhos {
+		if vizinho.HOST != host && vizinho.PORT != port {
+			new_neighbours = append(new_neighbours,
+				&Vizinho{HOST: vizinho.HOST, PORT: vizinho.PORT})
+		}
+	}
+
+	return new_neighbours
 }

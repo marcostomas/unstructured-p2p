@@ -11,35 +11,9 @@ import (
 	"time"
 )
 
-var TTL = 100
-
-func imprimeEstadoNo(noh *node.No, mensagem string) {
-	fmt.Printf("\n")
-	fmt.Printf("////////////////////////// Estado do nó - %s ///////////////////////////////\n", mensagem)
-
-	fmt.Println("HOST: ", noh.HOST)
-	fmt.Println("PORT: ", noh.PORT)
-	fmt.Println("Pares chave-valor: [")
-
-	for key, value := range noh.Pares_chave_valor {
-		fmt.Println("\t\t" + key + " " + value)
-	}
-
-	fmt.Println("]")
-
-	fmt.Println("Vizinhos: [")
-
-	for _, vizinho := range noh.Vizinhos {
-		fmt.Println("\t\t" + vizinho.HOST + ":" + vizinho.PORT)
-	}
-
-	fmt.Println("]")
-
-	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
-	fmt.Println("Número de Sequência: ", noh.NoSeq)
-
-	fmt.Printf("\n")
-}
+var SEARCH_FL = client.SearchFlooding
+var SEARCH_RW = client.SearchRandomWalk
+var SEARCH_DP = client.SearchInDepth
 
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
@@ -92,13 +66,6 @@ func extraiArgs(args []string, nArgs int) (string, string, string) {
 
 }
 
-func getEnderecoPorta(url string) (string, string) {
-	enderecoCompleto := strings.Split(url, ":")
-	endereco, porta := enderecoCompleto[0], enderecoCompleto[1]
-
-	return endereco, porta
-}
-
 func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) {
 
 	for _, vizinho := range vizinhos {
@@ -113,7 +80,7 @@ func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) {
 }
 
 func exibeMenu(no *node.No) {
-
+	fmt.Println("")
 	fmt.Println("Escolha o comando")
 	fmt.Println("[0] Listar vizinhos")
 	fmt.Println("[1] Hello")
@@ -133,19 +100,19 @@ func exibeMenu(no *node.No) {
 
 		switch numero {
 		case 0:
-			client.SearchFlooding("")
+			fmt.Println("Listar vizinhos!")
 		case 1:
-			client.ShowNeighboursToChoose(no)
+			client.ShowNeighbours(no)
 		case 2:
-			fmt.Println("SEARCH (flooding)")
+			client.FindKey(no, SEARCH_FL)
 		case 3:
-			fmt.Println("SEARCH (random walk)")
+			client.FindKey(no, SEARCH_RW)
 		case 4:
-			fmt.Println("SEARCH (busca em profundidade)")
+			client.FindKey(no, SEARCH_DP)
 		case 5:
 			fmt.Println("Estatísticas")
 		case 6:
-			fmt.Println("Alterar valor padrão de TTL")
+			node.ChangeTTL(no)
 		case 9:
 			os.Exit(0)
 		}
@@ -165,18 +132,17 @@ func main() {
 	address, arqVizinhos, arqParesChaveValor := extraiArgs(args, nArgs)
 
 	HOST := strings.Split(address, ":")[0]
-
 	PORT := strings.Split(address, ":")[1]
 
 	fmt.Printf("---------------------------------------\n")
 	fmt.Printf("Inicializando nó...\n")
 
 	noh := node.NewNo(HOST, PORT)
-	go server.InitServer(noh.HOST, noh.PORT)
+	go server.InitServer(noh)
 
 	time.Sleep(5000 * time.Millisecond)
 
-	imprimeEstadoNo(noh, "1")
+	node.PrintNode(noh, 1)
 	// Envia HELLO para confirmar a existência do vizinho
 	if nArgs > 2 {
 		data, status := lerArquivo(arqVizinhos)
@@ -188,7 +154,7 @@ func main() {
 		comunicarVizinhos(listaVizinhos, noh)
 	}
 
-	imprimeEstadoNo(noh, "2")
+	node.PrintNode(noh, 2)
 
 	if nArgs == 4 {
 		data, status := lerArquivo(arqParesChaveValor)
@@ -202,7 +168,7 @@ func main() {
 		}
 	}
 
-	imprimeEstadoNo(noh, "3")
+	node.PrintNode(noh, 3)
 
 	exibeMenu(noh)
 }

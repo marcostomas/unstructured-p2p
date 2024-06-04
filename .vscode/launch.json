@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "./src",
+            "args": [ "192.168.0.6:5003",
+                      "../txts/topologia_triangulo/vizinhos[2].txt",
+                      "../txts/topologia_triangulo/lista_chave_valor[2].txt"
+                    ],
+            "console": "integratedTerminal"            
+        }
+    ]
+}

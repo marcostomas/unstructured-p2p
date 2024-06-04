@@ -2,12 +2,16 @@ package client
 
 import (
 	"UP2P/node"
+	"UP2P/utils"
 	"bufio"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"strconv"
 	"time"
 )
+
+type SearchMethod func(string, *node.No, string, []*node.Vizinho)
 
 // Definir funções que o cliente pode executar
 
@@ -21,7 +25,7 @@ func ListAllNeighbours() [][]string {
 
 }
 
-func ShowNeighboursToChoose(no *node.No) {
+func ShowNeighbours(no *node.No) {
 
 	vizinhos := no.Vizinhos
 
@@ -79,6 +83,7 @@ func Hello(DESTINY_HOST string,
 	if !status {
 		fmt.Println("Não foi possível fazer a comunicação com: " + DESTINY_HOST + ":" + DESTINY_PORT)
 		fmt.Println("Motivo: " + message)
+
 		return false
 	}
 
@@ -87,31 +92,79 @@ func Hello(DESTINY_HOST string,
 		no.PORT + " " +
 		noseq + " " +
 		"1")
+
 	return true
 
 }
 
-func SearchFlooding(_key_ string) (_status_ bool, _value_ int) {
+func FindKey(no *node.No, f SearchMethod) {
 
-	/* TODO: implementar a requisição da chave para todos os vizinhos
-	   Returned values: _status_ => se achou o não a chave
-						_key_ => valor da chave, -1 se não for encontrada
-	*/
+	fmt.Printf("Digite a chave a ser buscada\n")
 
-	fmt.Println("Mandando um searchFlooding")
+	var KEY string
 
-	return true, 1
+	fmt.Scanln(&KEY)
+
+	value, existsLocally := no.Pares_chave_valor[KEY]
+
+	if existsLocally {
+		fmt.Printf("Valor na tabela local!\n")
+		fmt.Printf("\tchave: %s valor: %s\n", KEY, value)
+		return
+	}
+
+	f(KEY, no, strconv.Itoa(no.TTL), no.Vizinhos)
 
 }
 
-func SearchRandomWalk(_key_ string) (_status_ bool, _value_ int) {
+func SearchFlooding(KEY string,
+	NO *node.No,
+	TTL string,
+	Vizinhos []*node.Vizinho) {
 
-	return true, 1
+	message := utils.GerarMensagemDeBusca(NO, TTL, "FL", KEY)
+	sMsg := fmt.Sprintf("%s:%s %s %s %s %s %s %s",
+		message.ORIGIN_HOST,
+		message.ORIGIN_PORT,
+		message.NOSEQ,
+		message.TTL,
+		message.ACTION,
+		message.MODE,
+		message.LAST_HOP_PORT,
+		message.KEY)
+
+	node.AddMessage(sMsg, NO)
+	node.IncrementNoSeq(NO)
+
+	for index := range Vizinhos {
+		url := utils.GerarURLdeSearch(message, NO, index)
+		go http.Get(url)
+	}
 }
 
-func SearchInDepth(_key_ string) (_status_ bool, _value_ int) {
+func ForwardFlooding(MESSAGE *utils.SearchMessage, Vizinhos []*node.Vizinho, NO *node.No) {
 
-	return true, 1
+	for index := range Vizinhos {
+		url := utils.GerarURLdeSearch(MESSAGE, NO, index)
+		go http.Get(url)
+	}
+
+}
+
+func SearchRandomWalk(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
+	random := rand.IntN(len(NO.Vizinhos))
+
+	message := utils.GerarMensagemDeBusca(NO, TTL, "RW", KEY)
+
+	url := utils.GerarURLdeSearch(message, NO, random)
+
+	http.Get(url)
+
+	node.IncrementNoSeq(NO)
+}
+
+func SearchInDepth(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
+
 }
 
 func consumeEndpoint(url string) (string, bool) {
