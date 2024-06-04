@@ -88,8 +88,15 @@ func PrintNode(noh *No, count int) {
 }
 
 func FindReceivedMessage(message string, NO *No) bool {
+
+	paramsMsg := strings.Split(message, " ")
+
 	for _, msg := range NO.Received_messages {
-		if msg == message {
+
+		paramsOtherMsg := strings.Split(msg, " ")
+
+		if paramsMsg[0] == paramsOtherMsg[0] &&
+			paramsMsg[1] == paramsOtherMsg[1] {
 			return true
 		}
 	}
