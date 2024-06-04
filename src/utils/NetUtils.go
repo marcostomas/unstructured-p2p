@@ -39,6 +39,34 @@ func GerarMensagemDeBusca(NO *node.No, _TTL string, _MODE string, _KEY string) *
 	}
 }
 
+func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, PORT string) *SearchMessage {
+
+	TTL, _ := strconv.Atoi(MESSAGE.TTL)
+	TTL--
+
+	HOP_COUNT, _ := strconv.Atoi(MESSAGE.HOP_COUNT)
+	HOP_COUNT++
+
+	MESSAGE.TTL = strconv.Itoa(TTL)
+	MESSAGE.HOP_COUNT = strconv.Itoa(HOP_COUNT)
+
+	MESSAGE.LAST_HOP_PORT = PORT
+
+	return &SearchMessage{
+		ORIGIN_HOST:   MESSAGE.ORIGIN_HOST,
+		ORIGIN_PORT:   MESSAGE.ORIGIN_PORT,
+		NOSEQ:         MESSAGE.NOSEQ,
+		TTL:           strconv.Itoa(TTL),
+		ACTION:        MESSAGE.ACTION,
+		MODE:          MESSAGE.MODE,
+		LAST_HOP_PORT: PORT,
+		KEY:           MESSAGE.KEY,
+		VALUE:         "",
+		HOP_COUNT:     strconv.Itoa(HOP_COUNT),
+	}
+
+}
+
 func ExtrairParamsURL(req *http.Request) *SearchMessage {
 	params := req.URL.Query()
 
@@ -75,22 +103,19 @@ func GerarURLdeSearch(
 	NO *node.No,
 	posVizinho int) string {
 
-	// Converter de int para string
-	noseq := strconv.Itoa(NO.NoSeq)
-
 	return "http://" +
 		NO.Vizinhos[posVizinho].HOST + ":" +
 		NO.Vizinhos[posVizinho].PORT + "/" +
 		"Search" + "?" +
 		"host=" + message.ORIGIN_HOST + "&" +
 		"port=" + message.ORIGIN_PORT + "&" +
-		"seqno=" + noseq + "&" +
+		"seqno=" + message.NOSEQ + "&" +
 		"ttl=" + message.TTL + "&" +
 		"action=" + "search" + "&" +
 		"mode=" + message.MODE + "&" +
 		"last_hop_port=" + NO.PORT + "&" +
 		"key=" + message.KEY + "&" +
-		"hop_count=" + "1"
+		"hop_count=" + message.HOP_COUNT
 }
 
 func GerarURLdeDevolucao(

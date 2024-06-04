@@ -47,17 +47,14 @@ func Search(w http.ResponseWriter, req *http.Request) {
 	data, err := json.Marshal(message)
 
 	if err != nil {
-		fmt.Printf(err.Error())
+		fmt.Print(err.Error())
 	}
 
 	fmt.Printf("\nMensagem recebida: \n%s\n", string(data))
 
-	//Cast de string pra int das propriedades TTL e HOP_COUNT
-	TTL, _ := strconv.Atoi(message.TTL)
-	HOP_COUNT, _ := strconv.Atoi(message.HOP_COUNT)
+	new_message := utils.AtualizarMensagemDeBusca(message, NO.PORT)
 
-	TTL--
-	HOP_COUNT++
+	TTL, _ := strconv.Atoi(message.TTL)
 
 	//Se TTL iguala a zero a mensagem para aqui
 	if TTL == 0 {
@@ -65,27 +62,20 @@ func Search(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Modifica a mensagem para o próximo envio
-	message.TTL = strconv.Itoa(TTL)
-	message.HOP_COUNT = strconv.Itoa(HOP_COUNT)
-
 	req_host := strings.Split(req.RemoteAddr, ":")[0]
 
 	switch message.MODE {
 	case "FL":
-		SearchFlooding(message, req_host)
-		break
+		SearchFlooding(message, new_message, req_host)
 	case "RW":
 		SearchRandomWalk(message)
-		break
 	case "DP":
 		SearchInDepth(message)
-		break
 	}
 
 }
 
-func SearchFlooding(message *utils.SearchMessage, req_host string) {
+func SearchFlooding(message *utils.SearchMessage, new_message *utils.SearchMessage, req_host string) {
 	msg_received := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message), NO)
 
 	if msg_received {
@@ -107,8 +97,9 @@ func SearchFlooding(message *utils.SearchMessage, req_host string) {
 
 	fmt.Printf("A chave %s não foi encontrada na tabela local!", message.KEY)
 
-	client.SearchFlooding(message.KEY, NO, fmt.Sprint(NO.TTL),
-		node.RemoveNeighbour(req_host, NO.PORT, NO))
+	client.ForwardFlooding(new_message, node.RemoveNeighbour(req_host, message.LAST_HOP_PORT, NO),
+		NO)
+
 }
 
 func SearchRandomWalk(message *utils.SearchMessage) {
@@ -124,7 +115,7 @@ func SearchRandomWalk(message *utils.SearchMessage) {
 		return
 	}
 
-	fmt.Println("A chave %s não foi encontrada na tabela local!", message.KEY)
+	fmt.Printf("A chave %s não foi encontrada na tabela local!", message.KEY)
 
 	random := rand.IntN(len(NO.Vizinhos))
 

@@ -136,10 +136,19 @@ func SearchFlooding(KEY string,
 	node.AddMessage(sMsg, NO)
 	node.IncrementNoSeq(NO)
 
-	for index, _ := range Vizinhos {
+	for index := range Vizinhos {
 		url := utils.GerarURLdeSearch(message, NO, index)
-		http.Get(url)
+		go http.Get(url)
 	}
+}
+
+func ForwardFlooding(MESSAGE *utils.SearchMessage, Vizinhos []*node.Vizinho, NO *node.No) {
+
+	for index := range Vizinhos {
+		url := utils.GerarURLdeSearch(MESSAGE, NO, index)
+		go http.Get(url)
+	}
+
 }
 
 func SearchRandomWalk(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
