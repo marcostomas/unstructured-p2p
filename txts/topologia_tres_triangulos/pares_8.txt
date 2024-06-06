@@ -1,0 +1,11 @@
+Javier_Bardem 10
+Millie_Brown 2
+Winston_Duke 7
+Laura_Dern 5
+Andrew_Garfield 9
+Anya_Taylor 6
+John_Krasinski 3
+Taraji_Henson 8
+Robert_Pattinson 1
+Lupita_Nyong 4
+Sebastian_Stan 10

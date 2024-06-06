@@ -1,0 +1,8 @@
+Idris_Elba 9
+Julianne_Moore 6
+Mahershala_Ali 3
+Natalia_Dyer 8
+Benedict_Cumberbatch 1
+Zendaya_Coleman 4
+Willem_Dafoe 10
+Olivia_Colman 2
