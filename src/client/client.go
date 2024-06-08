@@ -165,6 +165,15 @@ func SearchRandomWalk(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizi
 
 func SearchInDepth(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
 
+	NO.Dfs_messages[0].Received_from = NO.HOST + ":" + NO.PORT
+	NO.Dfs_messages[0]
+	utils.AdicionaMensagemDFS(NO)
+	utils.EscolherVizinhoAleatorio(NO.Dfs_messages[0])
+
+	message := utils.GerarMensagemDeBusca(NO, TTL, "BP", KEY)
+
+	NO.Active_child
+
 }
 
 func consumeEndpoint(url string) (string, bool) {

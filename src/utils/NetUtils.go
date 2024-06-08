@@ -3,6 +3,7 @@ package utils
 import (
 	"UP2P/node"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"strconv"
 )
@@ -146,4 +147,25 @@ func GenerateStringSearchMessage(message *SearchMessage) string {
 	return fmt.Sprintf("%s:%s %s %s %s %s %s %s %s %s", message.ORIGIN_HOST,
 		message.ORIGIN_PORT, message.NOSEQ, message.TTL, message.ACTION, message.MODE,
 		message.LAST_HOP_PORT, message.KEY, message.VALUE, message.HOP_COUNT)
+}
+
+// Escolhe um vizinho aleatoriamente e remove esse vizinho dos vizinhos pendentes
+func EscolherVizinhoAleatorio(vizinhos_pendentes *node.DfsMessage) {
+	random := rand.IntN(len(vizinhos_pendentes.Pending_child))
+
+	vizinhos_pendentes.Active_child = vizinhos_pendentes.Pending_child[random].HOST + ":" +
+		vizinhos_pendentes.Pending_child[random].PORT
+
+	// vizinhos_pendentes.Pending_child = append(vizinhos_pendentes.Pending_child[:random]),  vizinhos_pendentes.Pending_child[random+1:]...)
+}
+
+func AdicionaMensagemDFS(noh *node.No, origem_msg string) *node.DfsMessage {
+	temp := &node.DfsMessage{
+		Received_from: origem_msg,
+		Active_child:  "",
+		Pending_child: make([]*node.Vizinho, len(noh.Vizinhos)),
+	}
+
+	noh.Dfs_messages = append(noh.Dfs_messages, temp)
+	return temp
 }

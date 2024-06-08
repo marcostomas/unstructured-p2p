@@ -18,6 +18,14 @@ type No struct {
 	Pares_chave_valor map[string]string //Par nome e número associado
 	Vizinhos          []*Vizinho
 	TTL               int
+	Dfs_messages      []*DfsMessage //
+}
+
+type DfsMessage struct {
+	Message       string     // Mensagem recebida
+	Received_from string     // Vizinho que enviou a mensagem
+	Active_child  string     // Vizinho que está ativo, ou seja, pra quem ele enviou o pedido de busca
+	Pending_child []*Vizinho // Vizinhos que ainda não foram visitados
 }
 
 func NewNo(_HOST string, _PORT string) *No {
@@ -25,11 +33,12 @@ func NewNo(_HOST string, _PORT string) *No {
 	return &No{
 		HOST:              _HOST,
 		PORT:              _PORT,
-		NoSeq:             1,
+		NoSeq:             1, // Primeiro envia para depois incrementar
 		Pares_chave_valor: map[string]string{},
 		Vizinhos:          make([]*Vizinho, 0),
 		Received_messages: make([]string, 0),
 		TTL:               100,
+		Dfs_messages:      make([]*DfsMessage, 0),
 	}
 }
 
