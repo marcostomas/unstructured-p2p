@@ -4,11 +4,9 @@ import (
 	"UP2P/client"
 	"UP2P/node"
 	"UP2P/utils"
-	"encoding/json"
 	"fmt"
 	"math/rand/v2"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -42,62 +40,53 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 
 func Search(w http.ResponseWriter, req *http.Request) {
 
-	message := utils.ExtrairParamsURL(req)
+	message_received := utils.ExtrairParamsURL(req)
 
-	data, err := json.Marshal(message)
-
-	if err != nil {
-		fmt.Print(err.Error())
-	}
-
-	fmt.Printf("\nMensagem recebida: \n%s\n", string(data))
-
-	new_message := utils.AtualizarMensagemDeBusca(message, NO.PORT)
-
-	TTL, _ := strconv.Atoi(message.TTL)
+	message_updated := utils.AtualizarMensagemDeBusca(message_received, NO.PORT)
 
 	//Se TTL iguala a zero a mensagem para aqui
-	if TTL == 0 {
+	if message_updated.TTL == "0" {
 		fmt.Println("TTL igual a zero, descartando mensagem")
 		return
 	}
 
 	req_host := strings.Split(req.RemoteAddr, ":")[0]
 
-	switch message.MODE {
+	switch message_received.MODE {
 	case "FL":
-		SearchFlooding(message, new_message, req_host)
+		SearchFlooding(message_received, message_updated, req_host)
 	case "RW":
-		SearchRandomWalk(message)
+		SearchRandomWalk(message_received)
 	case "DP":
-		SearchInDepth(message)
+		SearchInDepth(message_received, message_updated)
 	}
 
 }
 
-func SearchFlooding(message *utils.SearchMessage, new_message *utils.SearchMessage, req_host string) {
-	msg_received := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message), NO)
+func SearchFlooding(message_received *utils.SearchMessage, message_updated *utils.SearchMessage, req_host string) {
+
+	msg_received := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message_received), NO)
 
 	if msg_received {
 		fmt.Println("Mensagem já recebida!")
 		return
 	}
 
-	node.AddMessage(utils.GenerateStringSearchMessage(message), NO)
+	node.AddMessage(utils.GenerateStringSearchMessage(message_received), NO)
 
-	value, exists := NO.Pares_chave_valor[message.KEY]
+	value, exists := NO.Pares_chave_valor[message_received.KEY]
 
 	if exists {
 		fmt.Println("Chave encontrada!")
-		return_url := utils.GerarURLdeDevolucao(message, value, NO)
+		return_url := utils.GerarURLdeDevolucao(message_received, value, NO)
 		defer http.Get(return_url)
 		node.IncrementNoSeq(NO)
 		return
 	}
 
-	fmt.Printf("A chave %s não foi encontrada na tabela local!", message.KEY)
+	fmt.Printf("A chave %s não foi encontrada na tabela local!", message_received.KEY)
 
-	client.ForwardFlooding(new_message, node.RemoveNeighbour(req_host, message.LAST_HOP_PORT, NO),
+	client.ForwardFlooding(message_updated, node.RemoveNeighbour(req_host, message_updated.LAST_HOP_PORT, NO.Vizinhos),
 		NO)
 
 }
@@ -119,7 +108,7 @@ func SearchRandomWalk(message *utils.SearchMessage) {
 
 	random := rand.IntN(len(NO.Vizinhos))
 
-	url := utils.GerarURLdeSearch(message, NO, random)
+	url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[random])
 
 	fmt.Printf("URL gerada para novo envio: %s\n", url)
 
@@ -130,7 +119,77 @@ func SearchRandomWalk(message *utils.SearchMessage) {
 
 }
 
-func SearchInDepth(message *utils.SearchMessage) {
+func SearchInDepth(message_received *utils.SearchMessage, message_updated *utils.SearchMessage) {
+
+	fmt.Printf("Search in Depth-----------------\n")
+	fmt.Printf("Mensagem recebida %s\n", utils.GenerateStringSearchMessage(message_received))
+
+	check_message_received := false
+
+	pos := 0
+
+	//Pra verificar se a mensagem é repitida
+	for index, dfs_message := range NO.Dfs_messages {
+
+		fmt.Printf("PÉREZ!\n")
+		fmt.Printf("Tá barato!\n")
+
+		arr := strings.Split(dfs_message.Message, " ")
+
+		HOST := strings.Split(arr[0], ":")[0]
+		PORT := strings.Split(arr[0], ":")[1]
+
+		SEQ_NO := arr[1]
+
+		if message_received.ORIGIN_HOST == HOST &&
+			message_received.ORIGIN_PORT == PORT &&
+			message_received.NOSEQ == SEQ_NO {
+
+			pos = index
+			check_message_received = true
+			break
+
+		}
+
+	}
+
+	Host_Active_Child := strings.Split(NO.Dfs_messages[pos].Active_child, ":")[0]
+	Port_Active_Child := strings.Split(NO.Dfs_messages[pos].Active_child, ":")[1]
+
+	if check_message_received {
+
+		//Pra verificar ciclo
+		if message_received.LAST_HOP_PORT != Port_Active_Child {
+
+			fmt.Printf("BP: ciclo detectado, devolvendo mensagem...")
+
+			NO.Dfs_messages[pos].Pending_child =
+				node.RemoveNeighbour(Host_Active_Child, Port_Active_Child,
+					NO.Dfs_messages[pos].Pending_child)
+
+		}
+
+		client.SearchInDepth(NO.Dfs_messages[pos], NO)
+
+	} else {
+
+		fmt.Printf("Mensagem nova!\n")
+
+		dfs_message :=
+			utils.AdicionaMensagemDFS(NO, utils.GenerateStringSearchMessage(message_updated))
+
+		fmt.Printf("DFS Message com %s adicionada\n", dfs_message.Message)
+
+		dfs_message.Pending_child =
+			node.RemoveNeighbour(Host_Active_Child, Port_Active_Child,
+				dfs_message.Pending_child)
+
+		client.SearchInDepth(dfs_message, NO)
+
+		fmt.Printf("PÉREZ\n")
+		fmt.Printf("--------------------\n")
+
+	}
 
 }
 

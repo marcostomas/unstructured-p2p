@@ -8,6 +8,7 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -137,7 +138,7 @@ func SearchFlooding(KEY string,
 	node.IncrementNoSeq(NO)
 
 	for index := range Vizinhos {
-		url := utils.GerarURLdeSearch(message, NO, index)
+		url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[index])
 		go http.Get(url)
 	}
 }
@@ -145,7 +146,7 @@ func SearchFlooding(KEY string,
 func ForwardFlooding(MESSAGE *utils.SearchMessage, Vizinhos []*node.Vizinho, NO *node.No) {
 
 	for index := range Vizinhos {
-		url := utils.GerarURLdeSearch(MESSAGE, NO, index)
+		url := utils.GerarURLdeSearch(MESSAGE, NO, NO.Vizinhos[index])
 		go http.Get(url)
 	}
 
@@ -156,23 +157,63 @@ func SearchRandomWalk(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizi
 
 	message := utils.GerarMensagemDeBusca(NO, TTL, "RW", KEY)
 
-	url := utils.GerarURLdeSearch(message, NO, random)
+	url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[random])
 
 	http.Get(url)
 
 	node.IncrementNoSeq(NO)
 }
 
-func SearchInDepth(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
+func PrepareSearchInDepth(KEY string,
+	NO *node.No,
+	TTL string,
+	Vizinhos []*node.Vizinho) {
 
-	NO.Dfs_messages[0].Received_from = NO.HOST + ":" + NO.PORT
-	NO.Dfs_messages[0]
-	utils.AdicionaMensagemDFS(NO)
-	utils.EscolherVizinhoAleatorio(NO.Dfs_messages[0])
+	Message := utils.GenerateStringSearchMessage(
+		utils.GerarMensagemDeBusca(NO, TTL, "BP", KEY))
 
-	message := utils.GerarMensagemDeBusca(NO, TTL, "BP", KEY)
+	dfs_message := utils.AdicionaMensagemDFS(NO, Message)
 
-	NO.Active_child
+	SearchInDepth(dfs_message, NO)
+
+}
+
+func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
+	NO *node.No) {
+
+	//Checa se tem vizinhos pendentes na dfs_message do nó
+	if len(DFS_MESSAGE.Pending_child) == 0 {
+
+		fmt.Printf("BP: nenhum vizinho encontrou a chave, retrocedendo...")
+
+		//Checa se o nó que enviou a mensagem não é o mesmo nó
+		if DFS_MESSAGE.Received_from != NO.HOST+":"+
+			NO.PORT {
+
+			pos := 0
+
+			//Precisamos da posição do vizinho que enviou a mensagem
+			for index, vizinho := range NO.Vizinhos {
+				pos = index
+				if vizinho.HOST+":"+vizinho.PORT == DFS_MESSAGE.Received_from {
+					break
+				}
+			}
+
+			http.Get(utils.GerarURLdeSearch(utils.ConverterDFSMessage(DFS_MESSAGE, ""),
+				NO, DFS_MESSAGE.Pending_child[pos]))
+		} else {
+			KEY := strings.Split(DFS_MESSAGE.Message, " ")[6]
+			fmt.Printf("BP: Não foi possível localizar a chave %s", KEY)
+		}
+
+	}
+
+	neighbour := utils.EscolherVizinhoAleatorio(DFS_MESSAGE)
+
+	url := utils.GerarURLdeSearch(utils.ConverterDFSMessage(DFS_MESSAGE, ""), NO, neighbour)
+
+	http.Get(url)
 
 }
 

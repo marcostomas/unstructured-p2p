@@ -118,10 +118,10 @@ func ChangeTTL(no *No) {
 }
 
 // Retorna o vizinho que enviou a mensagem para o nó da lista de vizinhos
-func RemoveNeighbour(host string, port string, no *No) []*Vizinho {
+func RemoveNeighbour(host string, port string, vizinhos []*Vizinho) []*Vizinho {
 
-	new_neighbours := make([]*Vizinho, len(no.Vizinhos))
-	for _, vizinho := range no.Vizinhos {
+	new_neighbours := make([]*Vizinho, len(vizinhos))
+	for _, vizinho := range vizinhos {
 		if vizinho.HOST != host && vizinho.PORT != port {
 			new_neighbours = append(new_neighbours,
 				&Vizinho{HOST: vizinho.HOST, PORT: vizinho.PORT})

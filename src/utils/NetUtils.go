@@ -6,6 +6,7 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type SearchMessage struct {
@@ -68,6 +69,29 @@ func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, PORT string) *SearchMessag
 
 }
 
+func ConverterDFSMessage(DFS_MESSAGE *node.DfsMessage, VALUE string) *SearchMessage {
+	arr := strings.Split(DFS_MESSAGE.Message, " ")
+
+	ORIGIN_HOST := strings.Split(arr[0], ":")[0]
+	ORIGIN_PORT := strings.Split(arr[0], ":")[1]
+
+	return &SearchMessage{
+		ORIGIN_HOST:   ORIGIN_HOST,
+		ORIGIN_PORT:   ORIGIN_PORT,
+		NOSEQ:         arr[1],
+		TTL:           arr[2],
+		ACTION:        arr[3],
+		MODE:          arr[4],
+		LAST_HOP_PORT: arr[5],
+		KEY:           arr[6],
+		VALUE:         VALUE,
+		HOP_COUNT:     arr[8],
+	}
+
+}
+
+// Retorna um ponteiro para uma struct SearchMessage, definida no começo desse arquivo,
+// com os parâmetros da url
 func ExtrairParamsURL(req *http.Request) *SearchMessage {
 	params := req.URL.Query()
 
@@ -102,11 +126,11 @@ func ExtrairParamsURL(req *http.Request) *SearchMessage {
 func GerarURLdeSearch(
 	message *SearchMessage,
 	NO *node.No,
-	posVizinho int) string {
+	VIZINHO *node.Vizinho) string {
 
 	return "http://" +
-		NO.Vizinhos[posVizinho].HOST + ":" +
-		NO.Vizinhos[posVizinho].PORT + "/" +
+		VIZINHO.HOST + ":" +
+		VIZINHO.PORT + "/" +
 		"Search" + "?" +
 		"host=" + message.ORIGIN_HOST + "&" +
 		"port=" + message.ORIGIN_PORT + "&" +
@@ -150,21 +174,26 @@ func GenerateStringSearchMessage(message *SearchMessage) string {
 }
 
 // Escolhe um vizinho aleatoriamente e remove esse vizinho dos vizinhos pendentes
-func EscolherVizinhoAleatorio(vizinhos_pendentes *node.DfsMessage) {
-	random := rand.IntN(len(vizinhos_pendentes.Pending_child))
+func EscolherVizinhoAleatorio(DFS_MESSAGE *node.DfsMessage) *node.Vizinho {
+	//Escolhe um vizinho aleatório
+	random := rand.IntN(len(DFS_MESSAGE.Pending_child))
 
-	vizinhos_pendentes.Active_child = vizinhos_pendentes.Pending_child[random].HOST + ":" +
-		vizinhos_pendentes.Pending_child[random].PORT
+	neighbour := DFS_MESSAGE.Pending_child[random]
 
-	// vizinhos_pendentes.Pending_child = append(vizinhos_pendentes.Pending_child[:random]),  vizinhos_pendentes.Pending_child[random+1:]...)
+	DFS_MESSAGE.Pending_child = append(DFS_MESSAGE.Pending_child[:random], DFS_MESSAGE.Pending_child[random+1:]...)
+
+	return neighbour
 }
 
 func AdicionaMensagemDFS(noh *node.No, origem_msg string) *node.DfsMessage {
 	temp := &node.DfsMessage{
-		Received_from: origem_msg,
+		Message:       origem_msg,
+		Received_from: noh.HOST + ":" + noh.PORT,
 		Active_child:  "",
-		Pending_child: make([]*node.Vizinho, len(noh.Vizinhos)),
+		Pending_child: make([]*node.Vizinho, 0),
 	}
+
+	temp.Pending_child = append(temp.Pending_child, noh.Vizinhos...)
 
 	noh.Dfs_messages = append(noh.Dfs_messages, temp)
 	return temp

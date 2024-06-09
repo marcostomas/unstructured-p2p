@@ -13,7 +13,7 @@ import (
 
 var SEARCH_FL = client.SearchFlooding
 var SEARCH_RW = client.SearchRandomWalk
-var SEARCH_DP = client.SearchInDepth
+var SEARCH_DP = client.PrepareSearchInDepth
 
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
