@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -98,6 +99,77 @@ func listarVizinhos(no *node.No) {
 
 }
 
+func showStatistics(no *node.No) {
+
+	fmt.Printf("Estatisticas\n")
+
+	total_flooding := 0
+	total_random_walk := 0
+	total_search_in_depth := 0
+
+	total_flooding_initialized := 0
+	total_random_walk_initialized := 0
+	total_search_in_depth_initialized := 0
+
+	total_hops_flooding := 0
+	total_hops_random_walk := 0
+	total_hops_search_in_depth := 0
+
+	mean_flooding := 0.0
+	mean_random_walk := 0.0
+	mean_search_in_depth := 0.0
+
+	//<ORIGIN> <SEQNO> <TTL> SEARCH <MODE> <LAST_HOP_PORT> <KEY> <HOP_COUNT>
+
+	//<ORIGIN> <SEQNO> <TTL> VAL <MODE> <KEY> <VALUE> <HOP_COUNT>
+
+	for _, mensagem := range no.Received_messages {
+		arr := strings.Split(mensagem, " ")
+
+		ACTION := arr[3]
+		MODE := arr[4]
+
+		if ACTION == "SEARCH" {
+			switch MODE {
+			case "FL":
+				total_flooding++
+			case "RW":
+				total_random_walk++
+			case "BP":
+				total_search_in_depth++
+			}
+		}
+
+		if ACTION == "VAL" {
+			HOPS, _ := strconv.Atoi(arr[7])
+			switch MODE {
+			case "FL":
+				total_flooding_initialized++
+				total_hops_flooding += HOPS
+			case "RW":
+				total_random_walk_initialized++
+				total_hops_random_walk += HOPS
+			case "BP":
+				total_search_in_depth_initialized++
+				total_hops_search_in_depth += HOPS
+			}
+		}
+
+	}
+
+	mean_flooding = float64(total_hops_flooding) / float64(total_flooding_initialized)
+	mean_random_walk = float64(total_hops_random_walk) / float64(total_random_walk_initialized)
+	mean_search_in_depth = float64(total_hops_search_in_depth) / float64(total_search_in_depth_initialized)
+
+	fmt.Printf("\tTotal de mensagens de flooding vistas: %d\n", total_flooding)
+	fmt.Printf("\tTotal de mensagens de random walk vistas: %d\n", total_random_walk)
+	fmt.Printf("\tTotal de mensagens de busca em profundidade vistas: %d\n", total_search_in_depth)
+	fmt.Printf("\tMedia de saltos ate encontrar destino por flooding: %f\n", mean_flooding)
+	fmt.Printf("\tMedia de saltos ate encontrar destino por random walk: %f\n", mean_random_walk)
+	fmt.Printf("\tMedia de saltos ate encontrar destino por busca em profuncidade: %f\n", mean_search_in_depth)
+
+}
+
 func exibeMenu(no *node.No) {
 	fmt.Println("")
 	fmt.Println("Escolha o comando")
@@ -129,7 +201,7 @@ func exibeMenu(no *node.No) {
 		case 4:
 			client.FindKey(no, SEARCH_DP)
 		case 5:
-			fmt.Println("Estatísticas")
+			showStatistics(no)
 		case 6:
 			node.ChangeTTL(no)
 		case 9:

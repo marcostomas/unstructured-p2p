@@ -150,7 +150,7 @@ func GerarURLdeSearch(
 		"port=" + message.ORIGIN_PORT + "&" +
 		"seqno=" + message.NOSEQ + "&" +
 		"ttl=" + message.TTL + "&" +
-		"action=" + "search" + "&" +
+		"action=" + "SEARCH" + "&" +
 		"mode=" + message.MODE + "&" +
 		"last_hop_port=" + NO.PORT + "&" +
 		"key=" + message.KEY + "&" +
