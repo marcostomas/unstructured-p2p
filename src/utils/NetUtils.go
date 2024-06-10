@@ -72,6 +72,21 @@ func ConverterDFSMessage(DFS_MESSAGE *node.DfsMessage, VALUE string) *SearchMess
 	ORIGIN_HOST := strings.Split(arr[0], ":")[0]
 	ORIGIN_PORT := strings.Split(arr[0], ":")[1]
 
+	if len(arr) == 8 {
+		return &SearchMessage{
+			ORIGIN_HOST:   ORIGIN_HOST,
+			ORIGIN_PORT:   ORIGIN_PORT,
+			NOSEQ:         arr[1],
+			TTL:           arr[2],
+			ACTION:        arr[3],
+			MODE:          arr[4],
+			LAST_HOP_PORT: arr[5],
+			KEY:           arr[6],
+			VALUE:         VALUE,
+			HOP_COUNT:     arr[7],
+		}
+	}
+
 	return &SearchMessage{
 		ORIGIN_HOST:   ORIGIN_HOST,
 		ORIGIN_PORT:   ORIGIN_PORT,
@@ -167,9 +182,17 @@ func GerarURLdeDevolucao(
 }
 
 func GenerateStringSearchMessage(message *SearchMessage) string {
+
+	if message.VALUE == "" {
+		return fmt.Sprintf("%s:%s %s %s %s %s %s %s %s", message.ORIGIN_HOST,
+			message.ORIGIN_PORT, message.NOSEQ, message.TTL, message.ACTION, message.MODE,
+			message.LAST_HOP_PORT, message.KEY, message.HOP_COUNT)
+	}
+
 	return fmt.Sprintf("%s:%s %s %s %s %s %s %s %s %s", message.ORIGIN_HOST,
 		message.ORIGIN_PORT, message.NOSEQ, message.TTL, message.ACTION, message.MODE,
 		message.LAST_HOP_PORT, message.KEY, message.VALUE, message.HOP_COUNT)
+
 }
 
 // Escolhe um vizinho aleatoriamente e remove esse vizinho dos vizinhos pendentes

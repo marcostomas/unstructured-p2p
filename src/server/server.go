@@ -24,13 +24,36 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 	TTL := params.Get("ttl")
 	MESSAGE_FIELD := params.Get("message")
 
+	vizinho_na_tabela := false
+
+	for _, vizinho := range NO.Vizinhos {
+
+		if vizinho.HOST == HOST && vizinho.PORT == PORT {
+			vizinho_na_tabela = true
+		}
+
+	}
+
 	MESSAGE := HOST + " " + PORT + " " + NOSEQ + " " + TTL + " " + MESSAGE_FIELD
 
 	fmt.Println("Mensagem recebida: " + MESSAGE)
 
 	node.AddMessage(MESSAGE, NO)
 
-	node.PrintNode(NO, count)
+	if !vizinho_na_tabela {
+		fmt.Printf("\tAdicionando vizinho na tabela: %s:%s\n", HOST, PORT)
+
+		novo_vizinho := new(node.Vizinho)
+		novo_vizinho.HOST = HOST
+		novo_vizinho.PORT = PORT
+
+		NO.Vizinhos = append(NO.Vizinhos, novo_vizinho)
+
+		return
+
+	}
+
+	fmt.Printf("\tVizinho ja esta na tabela: %s:%s\n", HOST, PORT)
 
 }
 
@@ -38,7 +61,7 @@ func Search(w http.ResponseWriter, req *http.Request) {
 
 	message_received := utils.ExtrairParamsURL(req)
 
-	fmt.Printf("Mensagem recebida %s\n", utils.GenerateStringSearchMessage(message_received))
+	fmt.Printf("Mensagem recebida: \"%s\"\n", utils.GenerateStringSearchMessage(message_received))
 
 	is_message_repeated := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message_received), NO)
 
@@ -107,8 +130,7 @@ func SearchRandomWalk(message_received *utils.SearchMessage, message_to_send *ut
 
 	url := utils.GerarURLdeSearch(message_to_send, NO, NO.Vizinhos[random])
 
-	fmt.Println("Encaminhando mensagem para " + NO.Vizinhos[random].HOST + ":" + NO.Vizinhos[random].PORT)
-	defer http.Get(url)
+	client.Consume_endpoint(url, NO, message_to_send, NO.Vizinhos[random])
 
 }
 
@@ -150,11 +172,8 @@ func SearchInDepth(message_received *utils.SearchMessage, message_to_send *utils
 		Active_Child := NO.Dfs_messages[pos].Active_child
 
 		//Pra verificar ciclo
+
 		if Received_From != Active_Child {
-
-			fmt.Printf("Received from: %s\n", Received_From)
-
-			fmt.Printf("Active child: %s\n", Active_Child)
 
 			fmt.Printf("BP: ciclo detectado, devolvendo mensagem...\n")
 
@@ -213,7 +232,7 @@ func Bye(w http.ResponseWriter, req *http.Request) {
 
 	MESSAGE := HOST + " " + PORT + " " + NOSEQ + " " + TTL + " " + MESSAGE_FIELD
 
-	fmt.Println("Mensagem recebida: " + MESSAGE)
+	fmt.Println("Mensagem recebida: \"" + MESSAGE + "\"")
 
 	node.AddMessage(MESSAGE, NO)
 

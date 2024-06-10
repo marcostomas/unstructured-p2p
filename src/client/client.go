@@ -12,18 +12,6 @@ import (
 
 type SearchMethod func(string, *node.No, string, []*node.Vizinho)
 
-// Definir funções que o cliente pode executar
-
-func ListAllNeighbours() [][]string {
-
-	/* TODO: implementar a busca por todos os vizinhos
-	   Returned values: [][]string => matriz de strings com os vizinhos
-	*/
-
-	return make([][]string, 0)
-
-}
-
 func ShowNeighbours(no *node.No) {
 
 	vizinhos := no.Vizinhos
@@ -134,7 +122,7 @@ func SearchFlooding(KEY string,
 
 	for index := range Vizinhos {
 		url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[index])
-		go consume_endpoint(url, NO, message, NO.Vizinhos[index])
+		go Consume_endpoint(url, NO, message, NO.Vizinhos[index])
 	}
 }
 
@@ -142,7 +130,7 @@ func ForwardFlooding(MESSAGE *utils.SearchMessage, Vizinhos []*node.Vizinho, NO 
 
 	for index := range Vizinhos {
 		url := utils.GerarURLdeSearch(MESSAGE, NO, Vizinhos[index])
-		go consume_endpoint(url, NO, MESSAGE, Vizinhos[index])
+		go Consume_endpoint(url, NO, MESSAGE, Vizinhos[index])
 	}
 
 }
@@ -154,7 +142,7 @@ func SearchRandomWalk(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizi
 
 	url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[random])
 
-	consume_endpoint(url, NO, message, NO.Vizinhos[random])
+	Consume_endpoint(url, NO, message, NO.Vizinhos[random])
 
 	node.IncrementNoSeq(NO)
 }
@@ -205,13 +193,13 @@ func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
 
 			url := utils.GerarURLdeSearch(message, NO, vizinho)
 
-			consume_endpoint(url, NO, message, vizinho)
+			Consume_endpoint(url, NO, message, vizinho)
 
 			return
 
 		} else {
 			KEY := strings.Split(DFS_MESSAGE.Message, " ")[6]
-			fmt.Printf("BP: Não foi possível localizar a chave %s", KEY)
+			fmt.Printf("BP: Não foi possível localizar a chave %s\n", KEY)
 			return
 		}
 
@@ -225,7 +213,7 @@ func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
 
 	url := utils.GerarURLdeSearch(message, NO, neighbour)
 
-	consume_endpoint(url, NO, message, neighbour)
+	Consume_endpoint(url, NO, message, neighbour)
 
 }
 
@@ -246,17 +234,15 @@ func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No, RECEIVED_FRO
 
 	url := utils.GerarURLdeSearch(message, NO, vizinho)
 
-	consume_endpoint(url, NO, message, vizinho)
+	Consume_endpoint(url, NO, message, vizinho)
 }
-
-//Encaminhando mensagem "127.0.0.1:5009 1 1 BYE" para 127.0.0.1:5010
 
 func Bye(NO *node.No) {
 	for _, vizinho := range NO.Vizinhos {
 
 		message := NO.HOST + ":" + NO.PORT + strconv.Itoa(NO.NoSeq) + "1" + "BYE"
 
-		fmt.Printf("Encaminhando mensagem \"%s\" para %s:%s", message, vizinho.HOST, vizinho.PORT)
+		fmt.Printf("Encaminhando mensagem \"%s\" para %s:%s\n", message, vizinho.HOST, vizinho.PORT)
 
 		var url string = "http://" +
 			vizinho.HOST +
@@ -276,7 +262,7 @@ func Bye(NO *node.No) {
 	}
 }
 
-func consume_endpoint(url string, no *node.No, MESSAGE *utils.SearchMessage,
+func Consume_endpoint(url string, no *node.No, MESSAGE *utils.SearchMessage,
 	Vizinho *node.Vizinho) bool {
 
 	//Converter de int para string
@@ -299,11 +285,15 @@ func consume_endpoint(url string, no *node.No, MESSAGE *utils.SearchMessage,
 		return false
 	}
 
-	fmt.Println("\tEnvio feito com sucesso: " +
+	fmt.Println("\tEnvio feito com sucesso: \"" +
 		MESSAGE.ORIGIN_HOST + ":" +
 		MESSAGE.ORIGIN_PORT + " " +
 		noseq + " " +
-		"1")
+		MESSAGE.TTL + " " +
+		MESSAGE.ACTION + " " +
+		MESSAGE.MODE + " " +
+		MESSAGE.KEY + " " +
+		MESSAGE.HOP_COUNT + "\"")
 
 	return true
 }
