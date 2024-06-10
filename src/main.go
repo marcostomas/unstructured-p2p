@@ -117,7 +117,7 @@ func exibeMenu(no *node.No) {
 		case 6:
 			node.ChangeTTL(no)
 		case 9:
-
+			client.Bye(no)
 		}
 	}
 	exibeMenu(no)

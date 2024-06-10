@@ -162,7 +162,7 @@ func SearchInDepth(message_received *utils.SearchMessage, message_to_send *utils
 				node.RemoveNeighbour(Last_Hop_Host, Last_Hop_Port,
 					NO.Dfs_messages[pos].Pending_child)
 
-			client.DevolverMensagemDFS(NO.Dfs_messages[pos], NO)
+			client.DevolverMensagemDFS(NO.Dfs_messages[pos], NO, Received_From)
 
 			return
 

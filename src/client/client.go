@@ -183,7 +183,7 @@ func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
 	//Checa se tem vizinhos pendentes na dfs_message do nó
 	if len(DFS_MESSAGE.Pending_child) == 0 {
 
-		fmt.Printf("BP: nenhum vizinho encontrou a chave, retrocedendo...")
+		fmt.Printf("BP: nenhum vizinho encontrou a chave, retrocedendo...\n")
 
 		//Checa se o nó que enviou a mensagem não é o mesmo nó
 		if DFS_MESSAGE.Received_from != NO.HOST+":"+
@@ -229,7 +229,7 @@ func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
 
 }
 
-func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No) {
+func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No, RECEIVED_FROM string) {
 	message := utils.ConverterDFSMessage(DFS_MESSAGE, "")
 
 	pos := 0
@@ -237,7 +237,7 @@ func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No) {
 	//Precisamos da posição do vizinho que enviou a mensagem
 	for index, vizinho := range NO.Vizinhos {
 		pos = index
-		if vizinho.HOST+":"+vizinho.PORT == DFS_MESSAGE.Active_child {
+		if vizinho.HOST+":"+vizinho.PORT == RECEIVED_FROM {
 			break
 		}
 	}
