@@ -8,6 +8,7 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"strings"
+	"time"
 )
 
 var NO *node.No
@@ -24,8 +25,24 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 	TTL := params.Get("ttl")
 	MESSAGE_FIELD := params.Get("message")
 
+	MESSAGE := HOST + " " + PORT + " " + NOSEQ + " " + TTL + " " + MESSAGE_FIELD
+
+	fmt.Println("Mensagem recebida: " + MESSAGE)
+
+	node.AddMessage(MESSAGE, NO)
+
+	fmt.Fprintf(w, "")
+
+	tryAddNeighbour(HOST, PORT)
+
+}
+
+func tryAddNeighbour(HOST string, PORT string) {
 	vizinho_na_tabela := false
 
+	time.Sleep(100 * time.Millisecond)
+
+	// Checar se o vizinho já está na tabela
 	for _, vizinho := range NO.Vizinhos {
 
 		if vizinho.HOST == HOST && vizinho.PORT == PORT {
@@ -33,12 +50,6 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 		}
 
 	}
-
-	MESSAGE := HOST + " " + PORT + " " + NOSEQ + " " + TTL + " " + MESSAGE_FIELD
-
-	fmt.Println("Mensagem recebida: " + MESSAGE)
-
-	node.AddMessage(MESSAGE, NO)
 
 	if !vizinho_na_tabela {
 		fmt.Printf("\tAdicionando vizinho na tabela: %s:%s\n", HOST, PORT)
@@ -54,7 +65,6 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 	}
 
 	fmt.Printf("\tVizinho ja esta na tabela: %s:%s\n", HOST, PORT)
-
 }
 
 func Search(w http.ResponseWriter, req *http.Request) {
@@ -68,6 +78,7 @@ func Search(w http.ResponseWriter, req *http.Request) {
 	if !is_message_repeated {
 		node.AddMessage(utils.GenerateStringSearchMessage(message_received), NO)
 	} else if message_received.MODE == "FL" {
+		fmt.Printf("\tFlooding: mensagem repetida!\n")
 		return
 	}
 
@@ -181,28 +192,26 @@ func SearchInDepth(message_received *utils.SearchMessage, message_to_send *utils
 				node.RemoveNeighbour(Last_Hop_Host, Last_Hop_Port,
 					NO.Dfs_messages[pos].Pending_child)
 
-			client.DevolverMensagemDFS(NO.Dfs_messages[pos], NO, Received_From)
+			client.DevolverMensagemDFS(NO.Dfs_messages[pos], NO, Received_From, message_to_send)
 
 			return
 
 		}
 
-		client.SearchInDepth(NO.Dfs_messages[pos], NO)
+		client.SearchInDepth(NO.Dfs_messages[pos], NO, message_to_send)
 
 	} else {
 
-		fmt.Printf("Mensagem nova!\n")
-
 		dfs_message :=
-			node.AdicionaMensagemDFS(NO, Received_From, utils.GenerateStringSearchMessage(message_to_send))
+			node.AdicionaMensagemDFS(NO, Received_From, utils.GenerateStringSearchMessage(message_received))
 
-		fmt.Printf("DFS Message com %s adicionada\n", dfs_message.Message)
+		fmt.Printf("\tDFS Message com %s adicionada\n", dfs_message.Message)
 
 		dfs_message.Pending_child =
 			node.RemoveNeighbour(Last_Hop_Host, Last_Hop_Port,
 				dfs_message.Pending_child)
 
-		client.SearchInDepth(dfs_message, NO)
+		client.SearchInDepth(dfs_message, NO, message_to_send)
 
 	}
 

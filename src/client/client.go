@@ -122,7 +122,7 @@ func SearchFlooding(KEY string,
 
 	for index := range Vizinhos {
 		url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[index])
-		go Consume_endpoint(url, NO, message, NO.Vizinhos[index])
+		Consume_endpoint(url, NO, message, NO.Vizinhos[index])
 	}
 }
 
@@ -159,14 +159,17 @@ func PrepareSearchInDepth(KEY string,
 
 	dfs_message := node.AdicionaMensagemDFS(NO, node_address, message)
 
-	SearchInDepth(dfs_message, NO)
+	message_to_send := utils.ConverterDFSMessage(dfs_message, "")
+
+	SearchInDepth(dfs_message, NO, message_to_send)
 
 	node.IncrementNoSeq(NO)
 
 }
 
 func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
-	NO *node.No) {
+	NO *node.No,
+	message_to_send *utils.SearchMessage) {
 
 	//Checa se tem vizinhos pendentes na dfs_message do nó
 	if len(DFS_MESSAGE.Pending_child) == 0 {
@@ -209,16 +212,14 @@ func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
 
 	DFS_MESSAGE.Active_child = neighbour.HOST + ":" + neighbour.PORT
 
-	message := utils.ConverterDFSMessage(DFS_MESSAGE, "")
+	url := utils.GerarURLdeSearch(message_to_send, NO, neighbour)
 
-	url := utils.GerarURLdeSearch(message, NO, neighbour)
-
-	Consume_endpoint(url, NO, message, neighbour)
+	Consume_endpoint(url, NO, message_to_send, neighbour)
 
 }
 
-func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No, RECEIVED_FROM string) {
-	message := utils.ConverterDFSMessage(DFS_MESSAGE, "")
+func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No, RECEIVED_FROM string,
+	MESSAGE_TO_SEND *utils.SearchMessage) {
 
 	pos := 0
 
@@ -232,15 +233,16 @@ func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No, RECEIVED_FRO
 
 	vizinho := NO.Vizinhos[pos]
 
-	url := utils.GerarURLdeSearch(message, NO, vizinho)
+	url := utils.GerarURLdeSearch(MESSAGE_TO_SEND, NO, vizinho)
 
-	Consume_endpoint(url, NO, message, vizinho)
+	Consume_endpoint(url, NO, MESSAGE_TO_SEND, vizinho)
 }
 
 func Bye(NO *node.No) {
 	for _, vizinho := range NO.Vizinhos {
 
-		message := NO.HOST + ":" + NO.PORT + strconv.Itoa(NO.NoSeq) + "1" + "BYE"
+		message := NO.HOST + ":" + NO.PORT +
+			" " + strconv.Itoa(NO.NoSeq) + " " + "1" + " " + "BYE"
 
 		fmt.Printf("Encaminhando mensagem \"%s\" para %s:%s\n", message, vizinho.HOST, vizinho.PORT)
 
@@ -265,14 +267,11 @@ func Bye(NO *node.No) {
 func Consume_endpoint(url string, no *node.No, MESSAGE *utils.SearchMessage,
 	Vizinho *node.Vizinho) bool {
 
-	//Converter de int para string
-	noseq := strconv.Itoa(no.NoSeq)
-
 	fmt.Println("Encaminhando mensagem \"" +
 		MESSAGE.ORIGIN_HOST + ":" +
 		MESSAGE.ORIGIN_PORT + " " +
-		noseq + " " +
-		strconv.Itoa(no.TTL) + " " +
+		MESSAGE.NOSEQ + " " +
+		MESSAGE.TTL + " " +
 		MESSAGE.ACTION + " " +
 		MESSAGE.MODE + " " +
 		MESSAGE.HOP_COUNT + "\"" +
@@ -288,10 +287,11 @@ func Consume_endpoint(url string, no *node.No, MESSAGE *utils.SearchMessage,
 	fmt.Println("\tEnvio feito com sucesso: \"" +
 		MESSAGE.ORIGIN_HOST + ":" +
 		MESSAGE.ORIGIN_PORT + " " +
-		noseq + " " +
+		MESSAGE.NOSEQ + " " +
 		MESSAGE.TTL + " " +
 		MESSAGE.ACTION + " " +
 		MESSAGE.MODE + " " +
+		MESSAGE.LAST_HOP_PORT + " " +
 		MESSAGE.KEY + " " +
 		MESSAGE.HOP_COUNT + "\"")
 

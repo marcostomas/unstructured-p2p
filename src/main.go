@@ -68,7 +68,23 @@ func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) {
 		status := client.Hello(vizinho.HOST, vizinho.PORT, no)
 
 		if status {
-			node.AddNeighbour(no, vizinho.HOST, vizinho.PORT)
+
+			already_exists := false
+
+			for _, vizinho_na_tabela := range no.Vizinhos {
+
+				if vizinho_na_tabela.HOST == vizinho.HOST &&
+					vizinho_na_tabela.PORT == vizinho.PORT {
+
+					already_exists = true
+
+				}
+
+			}
+
+			if !already_exists {
+				node.AddNeighbour(no, vizinho.HOST, vizinho.PORT)
+			}
 		}
 	}
 }
@@ -118,6 +134,7 @@ func exibeMenu(no *node.No) {
 			node.ChangeTTL(no)
 		case 9:
 			client.Bye(no)
+			return
 		}
 	}
 	exibeMenu(no)
@@ -156,7 +173,6 @@ func main() {
 		if !status {
 			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
 		}
-		fmt.Printf("Tentando adicionar pares chave valor na tabela...\n")
 		arr := strings.Split(string(data), "\n")
 		for _, pair := range arr {
 			node.AddKey(pair, noh)
