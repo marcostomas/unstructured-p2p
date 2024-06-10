@@ -152,11 +152,19 @@ func SearchInDepth(message_received *utils.SearchMessage, message_to_send *utils
 		//Pra verificar ciclo
 		if Received_From != Active_Child {
 
-			fmt.Printf("BP: ciclo detectado, devolvendo mensagem...")
+			fmt.Printf("Received from: %s\n", Received_From)
+
+			fmt.Printf("Active child: %s\n", Active_Child)
+
+			fmt.Printf("BP: ciclo detectado, devolvendo mensagem...\n")
 
 			NO.Dfs_messages[pos].Pending_child =
 				node.RemoveNeighbour(Last_Hop_Host, Last_Hop_Port,
 					NO.Dfs_messages[pos].Pending_child)
+
+			client.DevolverMensagemDFS(NO.Dfs_messages[pos], NO)
+
+			return
 
 		}
 

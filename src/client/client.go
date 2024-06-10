@@ -192,7 +192,7 @@ func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
 			pos := 0
 
 			//Precisamos da posição do vizinho que enviou a mensagem
-			for index, vizinho := range DFS_MESSAGE.Pending_child {
+			for index, vizinho := range NO.Vizinhos {
 				pos = index
 				if vizinho.HOST+":"+vizinho.PORT == DFS_MESSAGE.Received_from {
 					break
@@ -201,20 +201,25 @@ func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
 
 			message := utils.ConverterDFSMessage(DFS_MESSAGE, "")
 
-			vizinho := DFS_MESSAGE.Pending_child[pos]
+			vizinho := NO.Vizinhos[pos]
 
 			url := utils.GerarURLdeSearch(message, NO, vizinho)
 
 			consume_endpoint(url, NO, message, vizinho)
 
+			return
+
 		} else {
 			KEY := strings.Split(DFS_MESSAGE.Message, " ")[6]
 			fmt.Printf("BP: Não foi possível localizar a chave %s", KEY)
+			return
 		}
 
 	}
 
 	neighbour := utils.EscolherVizinhoAleatorio(DFS_MESSAGE)
+
+	DFS_MESSAGE.Active_child = neighbour.HOST + ":" + neighbour.PORT
 
 	message := utils.ConverterDFSMessage(DFS_MESSAGE, "")
 
@@ -222,6 +227,26 @@ func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
 
 	consume_endpoint(url, NO, message, neighbour)
 
+}
+
+func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No) {
+	message := utils.ConverterDFSMessage(DFS_MESSAGE, "")
+
+	pos := 0
+
+	//Precisamos da posição do vizinho que enviou a mensagem
+	for index, vizinho := range NO.Vizinhos {
+		pos = index
+		if vizinho.HOST+":"+vizinho.PORT == DFS_MESSAGE.Active_child {
+			break
+		}
+	}
+
+	vizinho := NO.Vizinhos[pos]
+
+	url := utils.GerarURLdeSearch(message, NO, vizinho)
+
+	consume_endpoint(url, NO, message, vizinho)
 }
 
 //Encaminhando mensagem "127.0.0.1:5009 1 1 BYE" para 127.0.0.1:5010
