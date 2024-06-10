@@ -76,12 +76,10 @@ func GenerateNeighboursList(data []byte) []*Vizinho {
 }
 
 func PrintNode(noh *No, count int) {
-	fmt.Printf("\n")
-	fmt.Printf("/////////////////// Estado do nó - %d ///////////////////\n", count)
 
-	fmt.Println("HOST: ", noh.HOST)
+	fmt.Printf("\n\n")
+
 	fmt.Println("PORT: ", noh.PORT)
-	fmt.Println("Pares chave-valor: ", noh.Pares_chave_valor)
 	fmt.Println("Vizinhos: [")
 
 	for _, vizinho := range noh.Vizinhos {
@@ -89,9 +87,6 @@ func PrintNode(noh *No, count int) {
 	}
 
 	fmt.Printf("]\n")
-
-	fmt.Println("Mensagens recebidas: ", noh.Received_messages)
-	fmt.Println("Número de Sequência: ", noh.NoSeq)
 
 	fmt.Printf("\n")
 }
@@ -104,7 +99,9 @@ func FindReceivedMessage(message string, NO *No) bool {
 
 		paramsOtherMsg := strings.Split(msg, " ")
 
-		if paramsMsg[0] == paramsOtherMsg[0] &&
+		addressOtherMsg := paramsOtherMsg[0]
+
+		if paramsMsg[0] == addressOtherMsg &&
 			paramsMsg[1] == paramsOtherMsg[1] {
 			return true
 		}
@@ -120,13 +117,28 @@ func ChangeTTL(no *No) {
 // Retorna o vizinho que enviou a mensagem para o nó da lista de vizinhos
 func RemoveNeighbour(host string, port string, vizinhos []*Vizinho) []*Vizinho {
 
-	new_neighbours := make([]*Vizinho, len(vizinhos))
+	new_neighbours := make([]*Vizinho, 0)
 	for _, vizinho := range vizinhos {
-		if vizinho.HOST != host && vizinho.PORT != port {
+		if vizinho.HOST != host || vizinho.PORT != port {
 			new_neighbours = append(new_neighbours,
 				&Vizinho{HOST: vizinho.HOST, PORT: vizinho.PORT})
 		}
 	}
 
 	return new_neighbours
+}
+
+func AdicionaMensagemDFS(noh *No, received_from string, origem_msg string) *DfsMessage {
+
+	temp := &DfsMessage{
+		Message:       origem_msg,
+		Received_from: received_from,
+		Active_child:  "",
+		Pending_child: make([]*Vizinho, 0),
+	}
+
+	temp.Pending_child = append(temp.Pending_child, noh.Vizinhos...)
+
+	noh.Dfs_messages = append(noh.Dfs_messages, temp)
+	return temp
 }

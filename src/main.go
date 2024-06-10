@@ -19,7 +19,6 @@ func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
 	arquivo, err := os.Open(nomeArquivo)
 	if err != nil {
-		fmt.Println("Erro ao abrir o arquivo:", err)
 		return nil, false
 	}
 	defer arquivo.Close()
@@ -27,7 +26,6 @@ func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Lê o conteúdo do arquivo
 	conteudo, err := ioutil.ReadAll(arquivo)
 	if err != nil {
-		fmt.Println("Erro ao ler o arquivo:", err)
 		return nil, false
 	}
 
@@ -38,13 +36,9 @@ func verificaArgs(args []string) (int, bool) {
 	lenArgs := len(args)
 
 	if lenArgs > 0 && lenArgs < 5 {
-		fmt.Println("Validação OK!")
-		fmt.Printf("Argumentos: %s\n", args)
 		return lenArgs, true
 	}
 
-	fmt.Println("Número de argumentos inválido........ >:\n" +
-		"Formato: <endereco>:<porta> [vizinhos.txt [lista_chave_valor.txt]]")
 	return lenArgs, false
 }
 
@@ -70,13 +64,22 @@ func comunicarVizinhos(vizinhos []*node.Vizinho, no *node.No) {
 
 	for _, vizinho := range vizinhos {
 		time.Sleep(1000 * time.Millisecond)
+		fmt.Println("Tentando adicionar " + vizinho.HOST + ":" + vizinho.PORT + ".\n")
 		status := client.Hello(vizinho.HOST, vizinho.PORT, no)
 
 		if status {
-			fmt.Println("Vizinho " + vizinho.HOST + ":" + vizinho.PORT + " sendo adicionado à tabela.\n")
 			node.AddNeighbour(no, vizinho.HOST, vizinho.PORT)
 		}
 	}
+}
+
+func listarVizinhos(no *node.No) {
+	fmt.Printf("Há %d vizinhos na tabela:\n", len(no.Vizinhos))
+
+	for i, vizinho := range no.Vizinhos {
+		fmt.Printf("\t[%d] %s %s\n", i, vizinho.HOST, vizinho.PORT)
+	}
+
 }
 
 func exibeMenu(no *node.No) {
@@ -100,7 +103,7 @@ func exibeMenu(no *node.No) {
 
 		switch numero {
 		case 0:
-			fmt.Println("Listar vizinhos!")
+			listarVizinhos(no)
 		case 1:
 			client.ShowNeighbours(no)
 		case 2:
@@ -114,7 +117,7 @@ func exibeMenu(no *node.No) {
 		case 6:
 			node.ChangeTTL(no)
 		case 9:
-			os.Exit(0)
+
 		}
 	}
 	exibeMenu(no)
@@ -134,15 +137,10 @@ func main() {
 	HOST := strings.Split(address, ":")[0]
 	PORT := strings.Split(address, ":")[1]
 
-	fmt.Printf("---------------------------------------\n")
-	fmt.Printf("Inicializando nó...\n")
-
 	noh := node.NewNo(HOST, PORT)
 	go server.InitServer(noh)
 
 	time.Sleep(5000 * time.Millisecond)
-
-	node.PrintNode(noh, 1)
 	// Envia HELLO para confirmar a existência do vizinho
 	if nArgs > 2 {
 		data, status := lerArquivo(arqVizinhos)
@@ -150,11 +148,8 @@ func main() {
 			panic("ERRO AO TENTAR ABRIR O ARQUIVO! O PROGRAMA ESTÁ SENDO ENCERRADO...")
 		}
 		listaVizinhos := node.GenerateNeighboursList(data)
-		fmt.Printf("Tentando adicionar vizinhos na tabela...\n")
 		comunicarVizinhos(listaVizinhos, noh)
 	}
-
-	node.PrintNode(noh, 2)
 
 	if nArgs == 4 {
 		data, status := lerArquivo(arqParesChaveValor)
@@ -167,8 +162,6 @@ func main() {
 			node.AddKey(pair, noh)
 		}
 	}
-
-	node.PrintNode(noh, 3)
 
 	exibeMenu(noh)
 }

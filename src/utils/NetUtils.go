@@ -16,6 +16,7 @@ type SearchMessage struct {
 	TTL           string
 	ACTION        string
 	MODE          string
+	LAST_HOP_HOST string
 	LAST_HOP_PORT string
 	KEY           string
 	VALUE         string
@@ -41,18 +42,13 @@ func GerarMensagemDeBusca(NO *node.No, _TTL string, _MODE string, _KEY string) *
 	}
 }
 
-func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, PORT string) *SearchMessage {
+func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, HOST string, PORT string) *SearchMessage {
 
 	TTL, _ := strconv.Atoi(MESSAGE.TTL)
 	TTL--
 
 	HOP_COUNT, _ := strconv.Atoi(MESSAGE.HOP_COUNT)
 	HOP_COUNT++
-
-	MESSAGE.TTL = strconv.Itoa(TTL)
-	MESSAGE.HOP_COUNT = strconv.Itoa(HOP_COUNT)
-
-	MESSAGE.LAST_HOP_PORT = PORT
 
 	return &SearchMessage{
 		ORIGIN_HOST:   MESSAGE.ORIGIN_HOST,
@@ -61,6 +57,7 @@ func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, PORT string) *SearchMessag
 		TTL:           strconv.Itoa(TTL),
 		ACTION:        MESSAGE.ACTION,
 		MODE:          MESSAGE.MODE,
+		LAST_HOP_HOST: HOST,
 		LAST_HOP_PORT: PORT,
 		KEY:           MESSAGE.KEY,
 		VALUE:         "",
@@ -101,6 +98,7 @@ func ExtrairParamsURL(req *http.Request) *SearchMessage {
 	_TTL := params.Get("ttl")
 	_ACTION := params.Get("action")
 	_MODE := params.Get("mode")
+	_LAST_HOP_HOST := strings.Split(req.RemoteAddr, ":")[0]
 	_LAST_HOP_PORT := params.Get("last_hop_port")
 	_VALUE := params.Get("value")
 	_KEY := params.Get("key")
@@ -113,6 +111,7 @@ func ExtrairParamsURL(req *http.Request) *SearchMessage {
 		TTL:           _TTL,
 		ACTION:        _ACTION,
 		MODE:          _MODE,
+		LAST_HOP_HOST: _LAST_HOP_HOST,
 		LAST_HOP_PORT: _LAST_HOP_PORT,
 		KEY:           _KEY,
 		VALUE:         _VALUE,
@@ -183,18 +182,4 @@ func EscolherVizinhoAleatorio(DFS_MESSAGE *node.DfsMessage) *node.Vizinho {
 	DFS_MESSAGE.Pending_child = append(DFS_MESSAGE.Pending_child[:random], DFS_MESSAGE.Pending_child[random+1:]...)
 
 	return neighbour
-}
-
-func AdicionaMensagemDFS(noh *node.No, origem_msg string) *node.DfsMessage {
-	temp := &node.DfsMessage{
-		Message:       origem_msg,
-		Received_from: noh.HOST + ":" + noh.PORT,
-		Active_child:  "",
-		Pending_child: make([]*node.Vizinho, 0),
-	}
-
-	temp.Pending_child = append(temp.Pending_child, noh.Vizinhos...)
-
-	noh.Dfs_messages = append(noh.Dfs_messages, temp)
-	return temp
 }
