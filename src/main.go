@@ -217,7 +217,7 @@ func showStatistics(no *node.No) {
 	fmt.Printf("\tMedia e desvio padrao de saltos ate encontrar destino por random walk: %f %f\n", mean_random_walk,
 		standard_deviation_random_walk)
 
-	fmt.Printf("\tMedia e desvio padrao de saltos ate encontrar destino por busca em profuncidade: %f %f\n", mean_search_in_depth,
+	fmt.Printf("\tMedia e desvio padrao de saltos ate encontrar destino por busca em profundidade: %f %f\n", mean_search_in_depth,
 		standard_deviation_search_in_depth)
 
 }
