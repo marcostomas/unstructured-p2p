@@ -81,13 +81,17 @@ func Hello(DESTINY_HOST string,
 	return true
 }
 
-func FindKey(no *node.No, f SearchMethod) {
+func FindKey(no *node.No, f SearchMethod, KEY_AUTO string) {
 
 	fmt.Printf("Digite a chave a ser buscada\n")
 
 	var KEY string
 
-	fmt.Scanln(&KEY)
+	if KEY_AUTO == "NONE" {
+		fmt.Scanln(&KEY)
+	} else {
+		KEY = KEY_AUTO
+	}
 
 	value, existsLocally := no.Pares_chave_valor[KEY]
 

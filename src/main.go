@@ -16,6 +16,22 @@ var SEARCH_FL = client.SearchFlooding
 var SEARCH_RW = client.SearchRandomWalk
 var SEARCH_DP = client.PrepareSearchInDepth
 
+// Lista de chaves usada para fazer os testes automáticos
+var list = [...]string{"Chris_Evans",
+	"Kate_McKinnon",
+	"Idris_Elba",
+	"Julianne_Moore",
+	"Ryan_Gosling",
+	"Tilda_Swinton",
+	"Emma_Watson",
+	"Samuel_Jackson",
+	"Joaquin_Phoenix",
+	"Julia_Roberts",
+	"Sandra_Bullock",
+	"Brad_Pitt",
+	"Emma_Stone",
+	"Robert_Downey"}
+
 func lerArquivo(nomeArquivo string) ([]byte, bool) {
 	// Abre o arquivo
 	arquivo, err := os.Open(nomeArquivo)
@@ -170,6 +186,26 @@ func showStatistics(no *node.No) {
 
 }
 
+func testesAutomatizados(no *node.No) {
+
+	for i := 1; i <= 3; i++ {
+		switch i {
+		case 1:
+			for _, nome := range list {
+				client.FindKey(no, SEARCH_FL, nome)
+			}
+		case 2:
+			for _, nome := range list {
+				client.FindKey(no, SEARCH_RW, nome)
+			}
+		case 3:
+			for _, nome := range list {
+				client.FindKey(no, SEARCH_DP, nome)
+			}
+		}
+	}
+}
+
 func exibeMenu(no *node.No) {
 	fmt.Println("")
 	fmt.Println("Escolha o comando")
@@ -195,15 +231,17 @@ func exibeMenu(no *node.No) {
 		case 1:
 			client.ShowNeighbours(no)
 		case 2:
-			client.FindKey(no, SEARCH_FL)
+			client.FindKey(no, SEARCH_FL, "NONE")
 		case 3:
-			client.FindKey(no, SEARCH_RW)
+			client.FindKey(no, SEARCH_RW, "NONE")
 		case 4:
-			client.FindKey(no, SEARCH_DP)
+			client.FindKey(no, SEARCH_DP, "NONE")
 		case 5:
 			showStatistics(no)
 		case 6:
 			node.ChangeTTL(no)
+		case 7: //Opção secreta para realizar testes automatizados
+			testesAutomatizados(no)
 		case 9:
 			client.Bye(no)
 			return
