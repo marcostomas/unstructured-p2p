@@ -1,0 +1,9 @@
+Sandra_Bullock 5
+Brad_Pitt 9
+Charlize_Theron 6
+Matt_Damon 3
+Angelina_Jolie 8
+George_Clooney 1
+Reese_Witherspoon 4
+Will_Smith 10
+Nicole_Kidman 2
