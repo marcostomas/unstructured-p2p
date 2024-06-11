@@ -3,27 +3,14 @@ package client
 import (
 	"UP2P/node"
 	"UP2P/utils"
-	"bufio"
 	"fmt"
 	"math/rand/v2"
 	"net/http"
 	"strconv"
-	"time"
+	"strings"
 )
 
 type SearchMethod func(string, *node.No, string, []*node.Vizinho)
-
-// Definir funções que o cliente pode executar
-
-func ListAllNeighbours() [][]string {
-
-	/* TODO: implementar a busca por todos os vizinhos
-	   Returned values: [][]string => matriz de strings com os vizinhos
-	*/
-
-	return make([][]string, 0)
-
-}
 
 func ShowNeighbours(no *node.No) {
 
@@ -33,7 +20,7 @@ func ShowNeighbours(no *node.No) {
 	fmt.Printf("Há %d vizinhos na tabela\n", len(vizinhos))
 
 	for i, vizinho := range vizinhos {
-		fmt.Printf("[%d] %s:%s\n", i, vizinho.HOST, vizinho.PORT)
+		fmt.Printf("\t[%d] %s %s\n", i, vizinho.HOST, vizinho.PORT)
 	}
 
 	var n int
@@ -68,24 +55,22 @@ func Hello(DESTINY_HOST string,
 		"&ttl=" + "1" +
 		"&message=" + "HELLO"
 
-	node.IncrementNoSeq(no)
-
 	fmt.Println("Encaminhando mensagem \"" +
 		no.HOST + ":" +
 		no.PORT + " " +
-		noseq + " " +
+		strconv.Itoa(no.TTL) + " " +
 		"1" + " " +
-		"HELLO" + "\"" +
-		" para " + DESTINY_HOST + ":" + DESTINY_PORT)
+		"HELLO\"" + " para " +
+		DESTINY_HOST + ":" + DESTINY_PORT)
 
-	message, status := consumeEndpoint(url)
+	_, err := http.Get(url)
 
-	if !status {
-		fmt.Println("Não foi possível fazer a comunicação com: " + DESTINY_HOST + ":" + DESTINY_PORT)
-		fmt.Println("Motivo: " + message)
-
+	if err != nil {
+		fmt.Printf("\tErro ao conectar!\n")
 		return false
 	}
+
+	node.IncrementNoSeq(no)
 
 	fmt.Println("\tEnvio feito com sucesso: " +
 		no.HOST + ":" +
@@ -94,16 +79,19 @@ func Hello(DESTINY_HOST string,
 		"1")
 
 	return true
-
 }
 
-func FindKey(no *node.No, f SearchMethod) {
+func FindKey(no *node.No, f SearchMethod, KEY_AUTO string) {
 
 	fmt.Printf("Digite a chave a ser buscada\n")
 
 	var KEY string
 
-	fmt.Scanln(&KEY)
+	if KEY_AUTO == "NONE" {
+		fmt.Scanln(&KEY)
+	} else {
+		KEY = KEY_AUTO
+	}
 
 	value, existsLocally := no.Pares_chave_valor[KEY]
 
@@ -137,16 +125,16 @@ func SearchFlooding(KEY string,
 	node.IncrementNoSeq(NO)
 
 	for index := range Vizinhos {
-		url := utils.GerarURLdeSearch(message, NO, index)
-		go http.Get(url)
+		url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[index])
+		Consume_endpoint(url, NO, message, NO.Vizinhos[index])
 	}
 }
 
 func ForwardFlooding(MESSAGE *utils.SearchMessage, Vizinhos []*node.Vizinho, NO *node.No) {
 
 	for index := range Vizinhos {
-		url := utils.GerarURLdeSearch(MESSAGE, NO, index)
-		go http.Get(url)
+		url := utils.GerarURLdeSearch(MESSAGE, NO, Vizinhos[index])
+		go Consume_endpoint(url, NO, MESSAGE, Vizinhos[index])
 	}
 
 }
@@ -156,37 +144,169 @@ func SearchRandomWalk(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizi
 
 	message := utils.GerarMensagemDeBusca(NO, TTL, "RW", KEY)
 
-	url := utils.GerarURLdeSearch(message, NO, random)
+	message_repeated := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message), NO)
 
-	http.Get(url)
+	if !message_repeated {
+		msg := utils.GenerateStringSearchMessage(message)
+		node.AddMessage(msg, NO)
+	}
+
+	url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[random])
+
+	Consume_endpoint(url, NO, message, NO.Vizinhos[random])
 
 	node.IncrementNoSeq(NO)
 }
 
-func SearchInDepth(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizinho) {
+func PrepareSearchInDepth(KEY string,
+	NO *node.No,
+	TTL string,
+	VIZINHOS []*node.Vizinho) {
+
+	message := utils.GenerateStringSearchMessage(
+		utils.GerarMensagemDeBusca(NO, TTL, "BP", KEY))
+
+	node.AddMessage(message, NO)
+
+	node_address := NO.HOST + ":" + NO.PORT
+
+	dfs_message := node.AdicionaMensagemDFS(NO, node_address, message)
+
+	message_to_send := utils.ConverterDFSMessage(dfs_message, "")
+
+	SearchInDepth(dfs_message, NO, message_to_send)
+
+	node.IncrementNoSeq(NO)
 
 }
 
-func consumeEndpoint(url string) (string, bool) {
+func SearchInDepth(DFS_MESSAGE *node.DfsMessage,
+	NO *node.No,
+	message_to_send *utils.SearchMessage) {
 
-	time.Sleep(1000 * time.Millisecond)
+	//Checa se tem vizinhos pendentes na dfs_message do nó
+	if len(DFS_MESSAGE.Pending_child) == 0 {
 
-	resp, err := http.Get(url)
+		fmt.Printf("BP: nenhum vizinho encontrou a chave, retrocedendo...\n")
+
+		//Checa se o nó que enviou a mensagem não é o mesmo nó
+		if DFS_MESSAGE.Received_from != NO.HOST+":"+
+			NO.PORT {
+
+			pos := 0
+
+			//Precisamos da posição do vizinho que enviou a mensagem
+			for index, vizinho := range NO.Vizinhos {
+				pos = index
+				if vizinho.HOST+":"+vizinho.PORT == DFS_MESSAGE.Received_from {
+					break
+				}
+			}
+
+			message := utils.ConverterDFSMessage(DFS_MESSAGE, "")
+
+			vizinho := NO.Vizinhos[pos]
+
+			url := utils.GerarURLdeSearch(message, NO, vizinho)
+
+			Consume_endpoint(url, NO, message, vizinho)
+
+			return
+
+		} else {
+			KEY := strings.Split(DFS_MESSAGE.Message, " ")[6]
+			fmt.Printf("BP: Não foi possível localizar a chave %s\n", KEY)
+			return
+		}
+
+	}
+
+	neighbour := utils.EscolherVizinhoAleatorio(DFS_MESSAGE)
+
+	DFS_MESSAGE.Active_child = neighbour.HOST + ":" + neighbour.PORT
+
+	url := utils.GerarURLdeSearch(message_to_send, NO, neighbour)
+
+	Consume_endpoint(url, NO, message_to_send, neighbour)
+
+}
+
+func DevolverMensagemDFS(DFS_MESSAGE *node.DfsMessage, NO *node.No, RECEIVED_FROM string,
+	MESSAGE_TO_SEND *utils.SearchMessage) {
+
+	pos := 0
+
+	//Precisamos da posição do vizinho que enviou a mensagem
+	for index, vizinho := range NO.Vizinhos {
+		pos = index
+		if vizinho.HOST+":"+vizinho.PORT == RECEIVED_FROM {
+			break
+		}
+	}
+
+	vizinho := NO.Vizinhos[pos]
+
+	url := utils.GerarURLdeSearch(MESSAGE_TO_SEND, NO, vizinho)
+
+	Consume_endpoint(url, NO, MESSAGE_TO_SEND, vizinho)
+}
+
+func Bye(NO *node.No) {
+	for _, vizinho := range NO.Vizinhos {
+
+		message := NO.HOST + ":" + NO.PORT +
+			" " + strconv.Itoa(NO.NoSeq) + " " + "1" + " " + "BYE"
+
+		fmt.Printf("Encaminhando mensagem \"%s\" para %s:%s\n", message, vizinho.HOST, vizinho.PORT)
+
+		var url string = "http://" +
+			vizinho.HOST +
+			":" +
+			vizinho.PORT +
+			"/Bye?" +
+			"host=" + NO.HOST +
+			"&port=" + NO.PORT +
+			"&noseq=" + strconv.Itoa(NO.NoSeq) +
+			"&ttl=" + "1" +
+			"&message=" + "BYE"
+
+		http.Get(url)
+
+		fmt.Printf("\tEnvio feito com sucesso: \"%s\"", message)
+
+	}
+}
+
+func Consume_endpoint(url string, no *node.No, MESSAGE *utils.SearchMessage,
+	Vizinho *node.Vizinho) bool {
+
+	fmt.Println("Encaminhando mensagem \"" +
+		MESSAGE.ORIGIN_HOST + ":" +
+		MESSAGE.ORIGIN_PORT + " " +
+		MESSAGE.NOSEQ + " " +
+		MESSAGE.TTL + " " +
+		MESSAGE.ACTION + " " +
+		MESSAGE.MODE + " " +
+		MESSAGE.HOP_COUNT + "\"" +
+		" para " + Vizinho.HOST + ":" + Vizinho.PORT)
+
+	_, err := http.Get(url)
 
 	if err != nil {
-		return "Não foi possível estabelecer a conexão com " + url, false
+		fmt.Printf("\tErro ao conectar!\n")
+		return false
 	}
 
-	if resp.StatusCode == 404 {
-		return "404, recurso não encontrado", false
-	}
+	fmt.Println("\tEnvio feito com sucesso: \"" +
+		MESSAGE.ORIGIN_HOST + ":" +
+		MESSAGE.ORIGIN_PORT + " " +
+		MESSAGE.NOSEQ + " " +
+		MESSAGE.TTL + " " +
+		MESSAGE.ACTION + " " +
+		MESSAGE.MODE + " " +
+		MESSAGE.LAST_HOP_PORT + " " +
+		MESSAGE.KEY + " " +
+		MESSAGE.HOP_COUNT + "\"")
 
-	var message string
-
-	scanner := bufio.NewScanner(resp.Body)
-	for i := 0; scanner.Scan(); i++ {
-		message += scanner.Text()
-	}
-
-	return message, true
+	return true
 }

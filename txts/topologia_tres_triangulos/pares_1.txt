@@ -1,0 +1,12 @@
+Emma_Stone 7
+Robert_Downey 2
+Scarlett_Johansson 9
+Morgan_Freeman 6
+Jennifer_Lawrence 5
+Leonardo_DiCaprio 1
+Natalie_Portman 3
+Johnny_Depp 8
+Meryl_Streep 10
+Tom_Hanks 4
+Anne_Hathaway 2
+Denzel_Washington 7

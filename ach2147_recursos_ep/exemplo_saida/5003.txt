@@ -1,11 +1,11 @@
-Servidor criado: 127.0.0.1:5003
+Servidor criado: 192.168.0.6:5003
 
-Tentando adicionar vizinho  127.0.0.1:5001
-Encaminhando mensagem "127.0.0.1:5003 1 1 HELLO" para 127.0.0.1:5001
-	Envio feito com sucesso: "127.0.0.1:5003 1 1 HELLO"
-Tentando adicionar vizinho  127.0.0.1:5002
-Encaminhando mensagem "127.0.0.1:5003 2 1 HELLO" para 127.0.0.1:5002
-	Envio feito com sucesso: "127.0.0.1:5003 2 1 HELLO"
+Tentando adicionar vizinho  192.168.0.6:5001
+Encaminhando mensagem "192.168.0.6:5003 1 1 HELLO" para 192.168.0.6:5001
+	Envio feito com sucesso: "192.168.0.6:5003 1 1 HELLO"
+Tentando adicionar vizinho  192.168.0.6:5002
+Encaminhando mensagem "192.168.0.6:5003 2 1 HELLO" para 192.168.0.6:5002
+	Envio feito com sucesso: "192.168.0.6:5003 2 1 HELLO"
 
 
 Escolha o comando
@@ -21,11 +21,11 @@ Escolha o comando
 
 Escolha o vizinho:
 Ha 2 vizinhos na tabela:
-	[0] 127.0.0.1 5001
-	[1] 127.0.0.1 5002
+	[0] 192.168.0.6 5001
+	[1] 192.168.0.6 5002
 0
-Encaminhando mensagem "127.0.0.1:5003 3 1 HELLO" para 127.0.0.1:5001
-	Envio feito com sucesso: "127.0.0.1:5003 3 1 HELLO"
+Encaminhando mensagem "192.168.0.6:5003 3 1 HELLO" para 192.168.0.6:5001
+	Envio feito com sucesso: "192.168.0.6:5003 3 1 HELLO"
 
 Escolha o comando
 	[0] Listar vizinhos
@@ -40,13 +40,13 @@ Escolha o comando
 
 Digite a chave a ser buscada
 ach2147
-Encaminhando mensagem "127.0.0.1:5003 1 100 SEARCH FL 5003 ach2147 1" para 127.0.0.1:5001
-Mensagem recebida: "127.0.0.1:5001 1 100 VAL FL ach2147 SistemasDistribuidos 1"
+Encaminhando mensagem "192.168.0.6:5003 1 100 SEARCH FL 5003 ach2147 1" para 192.168.0.6:5001
+Mensagem recebida: "192.168.0.6:5001 1 100 VAL FL ach2147 SistemasDistribuidos 1"
 	Valor encontrado!
 		chave: ach2147 valor: SistemasDistribuidos
-	Envio feito com sucesso: "127.0.0.1:5003 1 100 SEARCH FL 5003 ach2147 1"
-Encaminhando mensagem "127.0.0.1:5003 1 100 SEARCH FL 5003 ach2147 1" para 127.0.0.1:5002
-	Envio feito com sucesso: "127.0.0.1:5003 1 100 SEARCH FL 5003 ach2147 1"
+	Envio feito com sucesso: "192.168.0.6:5003 1 100 SEARCH FL 5003 ach2147 1"
+Encaminhando mensagem "192.168.0.6:5003 1 100 SEARCH FL 5003 ach2147 1" para 192.168.0.6:5002
+	Envio feito com sucesso: "192.168.0.6:5003 1 100 SEARCH FL 5003 ach2147 1"
 
 Escolha o comando
 	[0] Listar vizinhos
@@ -61,11 +61,11 @@ Escolha o comando
 
 Digite a chave a ser buscada
 ach2147
-Encaminhando mensagem "127.0.0.1:5003 2 100 SEARCH RW 5003 ach2147 1" para 127.0.0.1:5002
-Mensagem recebida: "127.0.0.1:5001 2 100 VAL RW ach2147 SistemasDistribuidos 2"
+Encaminhando mensagem "192.168.0.6:5003 2 100 SEARCH RW 5003 ach2147 1" para 192.168.0.6:5002
+Mensagem recebida: "192.168.0.6:5001 2 100 VAL RW ach2147 SistemasDistribuidos 2"
 	Valor encontrado!
 		chave: ach2147 valor: SistemasDistribuidos
-	Envio feito com sucesso: "127.0.0.1:5003 2 100 SEARCH RW 5003 ach2147 1"
+	Envio feito com sucesso: "192.168.0.6:5003 2 100 SEARCH RW 5003 ach2147 1"
 
 Escolha o comando
 	[0] Listar vizinhos
@@ -80,11 +80,11 @@ Escolha o comando
 
 Digite a chave a ser buscada
 ach2147
-Encaminhando mensagem "127.0.0.1:5003 3 100 SEARCH BP 5003 ach2147 1" para 127.0.0.1:5002
-Mensagem recebida: "127.0.0.1:5001 3 100 VAL BP ach2147 SistemasDistribuidos 2"
+Encaminhando mensagem "192.168.0.6:5003 3 100 SEARCH BP 5003 ach2147 1" para 192.168.0.6:5002
+Mensagem recebida: "192.168.0.6:5001 3 100 VAL BP ach2147 SistemasDistribuidos 2"
 	Valor encontrado!
 		chave: ach2147 valor: SistemasDistribuidos
-	Envio feito com sucesso: "127.0.0.1:5003 3 100 SEARCH BP 5003 ach2147 1"
+	Envio feito com sucesso: "192.168.0.6:5003 3 100 SEARCH BP 5003 ach2147 1"
 
 Escolha o comando
 	[0] Listar vizinhos
@@ -132,8 +132,8 @@ Escolha o comando
 
 Digite a chave a ser buscada
 teste
-Encaminhando mensagem "127.0.0.1:5003 4 1 SEARCH RW 5003 teste 1" para 127.0.0.1:5002
-	Envio feito com sucesso: "127.0.0.1:5003 4 1 SEARCH RW 5003 teste 1"
+Encaminhando mensagem "192.168.0.6:5003 4 1 SEARCH RW 5003 teste 1" para 192.168.0.6:5002
+	Envio feito com sucesso: "192.168.0.6:5003 4 1 SEARCH RW 5003 teste 1"
 
 Escolha o comando
 	[0] Listar vizinhos
@@ -148,8 +148,8 @@ Escolha o comando
 
 Digite a chave a ser buscada
 teste
-Encaminhando mensagem "127.0.0.1:5003 5 1 SEARCH BP 5003 teste 1" para 127.0.0.1:5001
-	Envio feito com sucesso: "127.0.0.1:5003 5 1 SEARCH BP 5003 teste 1"
+Encaminhando mensagem "192.168.0.6:5003 5 1 SEARCH BP 5003 teste 1" para 192.168.0.6:5001
+	Envio feito com sucesso: "192.168.0.6:5003 5 1 SEARCH BP 5003 teste 1"
 
 Escolha o comando
 	[0] Listar vizinhos
@@ -163,7 +163,7 @@ Escolha o comando
 9
 
 Saindo...
-Encaminhando mensagem "127.0.0.1:5003 1 1 BYE" para 127.0.0.1:5001
-	Envio feito com sucesso: "127.0.0.1:5003 1 1 BYE"
-Encaminhando mensagem "127.0.0.1:5003 2 1 BYE" para 127.0.0.1:5002
-	Envio feito com sucesso: "127.0.0.1:5003 2 1 BYE"
+Encaminhando mensagem "192.168.0.6:5003 1 1 BYE" para 192.168.0.6:5001
+	Envio feito com sucesso: "192.168.0.6:5003 1 1 BYE"
+Encaminhando mensagem "192.168.0.6:5003 2 1 BYE" para 192.168.0.6:5002
+	Envio feito com sucesso: "192.168.0.6:5003 2 1 BYE"

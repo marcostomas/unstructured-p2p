@@ -1,0 +1,15 @@
+Joaquin_Phoenix 7
+Julia_Roberts 5
+Hugh_Jackman 9
+Cate_Blanchett 6
+Tom_Cruise 3
+Kate_Winslet 8
+Dwayne_Johnson 1
+Amy_Adams 4
+Keanu_Reeves 10
+Viola_Davis 2
+Christian_Bale 7
+Gwyneth_Paltrow 5
+Harrison_Ford 9
+Emily_Blunt 6
+Ryan_Reynolds 3

@@ -3,8 +3,10 @@ package utils
 import (
 	"UP2P/node"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type SearchMessage struct {
@@ -14,6 +16,7 @@ type SearchMessage struct {
 	TTL           string
 	ACTION        string
 	MODE          string
+	LAST_HOP_HOST string
 	LAST_HOP_PORT string
 	KEY           string
 	VALUE         string
@@ -39,18 +42,13 @@ func GerarMensagemDeBusca(NO *node.No, _TTL string, _MODE string, _KEY string) *
 	}
 }
 
-func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, PORT string) *SearchMessage {
+func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, HOST string, PORT string) *SearchMessage {
 
 	TTL, _ := strconv.Atoi(MESSAGE.TTL)
 	TTL--
 
 	HOP_COUNT, _ := strconv.Atoi(MESSAGE.HOP_COUNT)
 	HOP_COUNT++
-
-	MESSAGE.TTL = strconv.Itoa(TTL)
-	MESSAGE.HOP_COUNT = strconv.Itoa(HOP_COUNT)
-
-	MESSAGE.LAST_HOP_PORT = PORT
 
 	return &SearchMessage{
 		ORIGIN_HOST:   MESSAGE.ORIGIN_HOST,
@@ -59,6 +57,7 @@ func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, PORT string) *SearchMessag
 		TTL:           strconv.Itoa(TTL),
 		ACTION:        MESSAGE.ACTION,
 		MODE:          MESSAGE.MODE,
+		LAST_HOP_HOST: HOST,
 		LAST_HOP_PORT: PORT,
 		KEY:           MESSAGE.KEY,
 		VALUE:         "",
@@ -67,6 +66,44 @@ func AtualizarMensagemDeBusca(MESSAGE *SearchMessage, PORT string) *SearchMessag
 
 }
 
+func ConverterDFSMessage(DFS_MESSAGE *node.DfsMessage, VALUE string) *SearchMessage {
+	arr := strings.Split(DFS_MESSAGE.Message, " ")
+
+	ORIGIN_HOST := strings.Split(arr[0], ":")[0]
+	ORIGIN_PORT := strings.Split(arr[0], ":")[1]
+
+	if len(arr) == 8 {
+		return &SearchMessage{
+			ORIGIN_HOST:   ORIGIN_HOST,
+			ORIGIN_PORT:   ORIGIN_PORT,
+			NOSEQ:         arr[1],
+			TTL:           arr[2],
+			ACTION:        arr[3],
+			MODE:          arr[4],
+			LAST_HOP_PORT: arr[5],
+			KEY:           arr[6],
+			VALUE:         VALUE,
+			HOP_COUNT:     arr[7],
+		}
+	}
+
+	return &SearchMessage{
+		ORIGIN_HOST:   ORIGIN_HOST,
+		ORIGIN_PORT:   ORIGIN_PORT,
+		NOSEQ:         arr[1],
+		TTL:           arr[2],
+		ACTION:        arr[3],
+		MODE:          arr[4],
+		LAST_HOP_PORT: arr[5],
+		KEY:           arr[6],
+		VALUE:         VALUE,
+		HOP_COUNT:     arr[8],
+	}
+
+}
+
+// Retorna um ponteiro para uma struct SearchMessage, definida no começo desse arquivo,
+// com os parâmetros da url
 func ExtrairParamsURL(req *http.Request) *SearchMessage {
 	params := req.URL.Query()
 
@@ -76,6 +113,7 @@ func ExtrairParamsURL(req *http.Request) *SearchMessage {
 	_TTL := params.Get("ttl")
 	_ACTION := params.Get("action")
 	_MODE := params.Get("mode")
+	_LAST_HOP_HOST := strings.Split(req.RemoteAddr, ":")[0]
 	_LAST_HOP_PORT := params.Get("last_hop_port")
 	_VALUE := params.Get("value")
 	_KEY := params.Get("key")
@@ -88,6 +126,7 @@ func ExtrairParamsURL(req *http.Request) *SearchMessage {
 		TTL:           _TTL,
 		ACTION:        _ACTION,
 		MODE:          _MODE,
+		LAST_HOP_HOST: _LAST_HOP_HOST,
 		LAST_HOP_PORT: _LAST_HOP_PORT,
 		KEY:           _KEY,
 		VALUE:         _VALUE,
@@ -101,17 +140,17 @@ func ExtrairParamsURL(req *http.Request) *SearchMessage {
 func GerarURLdeSearch(
 	message *SearchMessage,
 	NO *node.No,
-	posVizinho int) string {
+	VIZINHO *node.Vizinho) string {
 
 	return "http://" +
-		NO.Vizinhos[posVizinho].HOST + ":" +
-		NO.Vizinhos[posVizinho].PORT + "/" +
+		VIZINHO.HOST + ":" +
+		VIZINHO.PORT + "/" +
 		"Search" + "?" +
 		"host=" + message.ORIGIN_HOST + "&" +
 		"port=" + message.ORIGIN_PORT + "&" +
 		"seqno=" + message.NOSEQ + "&" +
 		"ttl=" + message.TTL + "&" +
-		"action=" + "search" + "&" +
+		"action=" + "SEARCH" + "&" +
 		"mode=" + message.MODE + "&" +
 		"last_hop_port=" + NO.PORT + "&" +
 		"key=" + message.KEY + "&" +
@@ -143,7 +182,27 @@ func GerarURLdeDevolucao(
 }
 
 func GenerateStringSearchMessage(message *SearchMessage) string {
+
+	if message.VALUE == "" {
+		return fmt.Sprintf("%s:%s %s %s %s %s %s %s %s", message.ORIGIN_HOST,
+			message.ORIGIN_PORT, message.NOSEQ, message.TTL, message.ACTION, message.MODE,
+			message.LAST_HOP_PORT, message.KEY, message.HOP_COUNT)
+	}
+
 	return fmt.Sprintf("%s:%s %s %s %s %s %s %s %s %s", message.ORIGIN_HOST,
 		message.ORIGIN_PORT, message.NOSEQ, message.TTL, message.ACTION, message.MODE,
 		message.LAST_HOP_PORT, message.KEY, message.VALUE, message.HOP_COUNT)
+
+}
+
+// Escolhe um vizinho aleatoriamente e remove esse vizinho dos vizinhos pendentes
+func EscolherVizinhoAleatorio(DFS_MESSAGE *node.DfsMessage) *node.Vizinho {
+	//Escolhe um vizinho aleatório
+	random := rand.IntN(len(DFS_MESSAGE.Pending_child))
+
+	neighbour := DFS_MESSAGE.Pending_child[random]
+
+	DFS_MESSAGE.Pending_child = append(DFS_MESSAGE.Pending_child[:random], DFS_MESSAGE.Pending_child[random+1:]...)
+
+	return neighbour
 }

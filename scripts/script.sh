@@ -34,8 +34,31 @@ declare -i PORT
 
 HOST=$(ip address | grep -oE "\b192.168.[0-9]{1,3}.[0-9]{1,3}\b" | head -n 1)
 
-for ((i=0; i<n;i++)); do
-    PORT=($i+1)
+for ((i=1; i<=n;i++)); do
+    PORT=($i+5000)
     echo "Criando nó $i"
-    gnome-terminal -- bash -c "../src/UP2P '$HOST:500$PORT' '../txts/$topologia/vizinhos[$i].txt' '../txts/$topologia/lista_chave_valor[$i].txt'" bash
+    gnome-terminal -- bash -c "../src/UP2P '$HOST:$PORT' '../txts/$topologia/$i.txt' '../txts/$topologia/pares_$i.txt'" bash
 done
+
+echo ''
+echo '\O/ MASTER DOS NÓS, ESCOLHA UMA OPÇÃO \O/'
+echo ''
+
+declare -i opcao
+
+while [[ 1=1 ]]; do
+    echo ''
+    echo "[0]: VISUALIZAR TOPOLOGIA"
+    echo "[1]: ENCERRAR TODOS NÓS"
+    echo ''
+    read -p "" opcao
+    if [[ $opcao == 0 ]]; then
+        cat "../txts/$topologia/topologia.txt"
+    elif [[ $opcao == 1 ]]; then
+        pkill -f UP2P
+        break
+    else
+        echo 'ESCOLHA UMA OPÇÃO ENTRE 0 E 1'
+    fi
+done
+        

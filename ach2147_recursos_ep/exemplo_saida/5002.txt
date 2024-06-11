@@ -1,10 +1,10 @@
-Servidor criado: 127.0.0.1:5002
+Servidor criado: 192.168.0.6:5002
 
-Tentando adicionar vizinho  127.0.0.1:5001
-Encaminhando mensagem "127.0.0.1:5002 1 1 HELLO" para 127.0.0.1:5001
-	Envio feito com sucesso: "127.0.0.1:5002 1 1 HELLO"
-Tentando adicionar vizinho  127.0.0.1:5003
-Encaminhando mensagem "127.0.0.1:5002 2 1 HELLO" para 127.0.0.1:5003
+Tentando adicionar vizinho  192.168.0.6:5001
+Encaminhando mensagem "192.168.0.6:5002 1 1 HELLO" para 192.168.0.6:5001
+	Envio feito com sucesso: "192.168.0.6:5002 1 1 HELLO"
+Tentando adicionar vizinho  192.168.0.6:5003
+Encaminhando mensagem "192.168.0.6:5002 2 1 HELLO" para 192.168.0.6:5003
 	Erro ao conectar!
 
 
@@ -17,18 +17,18 @@ Escolha o comando
 	[5] Estatisticas
 	[6] Alterar valor padrao de TTL
 	[9] Sair
-Mensagem recebida: "127.0.0.1:5003 2 1 HELLO"
-	Adicionando vizinho na tabela: 127.0.0.1:5003
-Mensagem recebida: "127.0.0.1:5003 1 100 SEARCH FL 5003 ach2147 1"
-Encaminhando mensagem "127.0.0.1:5003 1 99 SEARCH FL 5002 ach2147 2" para 127.0.0.1:5001
-	Envio feito com sucesso: "127.0.0.1:5003 1 99 SEARCH FL 5002 ach2147 2"
-Mensagem recebida: "127.0.0.1:5003 2 100 SEARCH RW 5003 ach2147 1"
-Encaminhando mensagem "127.0.0.1:5003 2 99 SEARCH RW 5002 ach2147 2" para 127.0.0.1:5001
-	Envio feito com sucesso: "127.0.0.1:5003 2 99 SEARCH RW 5002 ach2147 2"
-Mensagem recebida: "127.0.0.1:5003 3 100 SEARCH BP 5003 ach2147 1"
-Encaminhando mensagem "127.0.0.1:5003 3 99 SEARCH BP 5002 ach2147 2" para 127.0.0.1:5001
-	Envio feito com sucesso: "127.0.0.1:5003 3 99 SEARCH BP 5002 ach2147 2"
-Mensagem recebida: "127.0.0.1:5003 4 1 SEARCH RW 5003 teste 1"
+Mensagem recebida: "192.168.0.6:5003 2 1 HELLO"
+	Adicionando vizinho na tabela: 192.168.0.6:5003
+Mensagem recebida: "192.168.0.6:5003 1 100 SEARCH FL 5003 ach2147 1"
+Encaminhando mensagem "192.168.0.6:5003 1 99 SEARCH FL 5002 ach2147 2" para 192.168.0.6:5001
+	Envio feito com sucesso: "192.168.0.6:5003 1 99 SEARCH FL 5002 ach2147 2"
+Mensagem recebida: "192.168.0.6:5003 2 100 SEARCH RW 5003 ach2147 1"
+Encaminhando mensagem "192.168.0.6:5003 2 99 SEARCH RW 5002 ach2147 2" para 192.168.0.6:5001
+	Envio feito com sucesso: "192.168.0.6:5003 2 99 SEARCH RW 5002 ach2147 2"
+Mensagem recebida: "192.168.0.6:5003 3 100 SEARCH BP 5003 ach2147 1"
+Encaminhando mensagem "192.168.0.6:5003 3 99 SEARCH BP 5002 ach2147 2" para 192.168.0.6:5001
+	Envio feito com sucesso: "192.168.0.6:5003 3 99 SEARCH BP 5002 ach2147 2"
+Mensagem recebida: "192.168.0.6:5003 4 1 SEARCH RW 5003 teste 1"
 	TTL igual a zero, descartando mensagem
-Mensagem recebida: "127.0.0.1:5003 2 1 BYE"
-	Removendo vizinho da tabela 127.0.0.1:5003
+Mensagem recebida: "192.168.0.6:5003 2 1 BYE"
+	Removendo vizinho da tabela 192.168.0.6:5003

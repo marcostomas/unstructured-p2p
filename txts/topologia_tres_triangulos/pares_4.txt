@@ -1,0 +1,11 @@
+Emma_Watson 8
+Samuel_Jackson 1
+Margot_Robbie 4
+Jake_Gyllenhaal 10
+Saoirse_Ronan 2
+Daniel_Craig 7
+Brie_Larson 5
+Chris_Hemsworth 9
+Jessica_Chastain 6
+Mark_Ruffalo 3
+Gal_Gadot 8

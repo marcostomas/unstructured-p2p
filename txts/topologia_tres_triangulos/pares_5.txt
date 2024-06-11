@@ -1,0 +1,6 @@
+Ryan_Gosling 1
+Tilda_Swinton 4
+Timothée_Chalamet 10
+Helen_Mirren 2
+Michael_Fassbender 7
+Rachel_McAdams 5

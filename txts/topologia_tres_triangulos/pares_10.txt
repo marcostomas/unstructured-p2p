@@ -1,0 +1,10 @@
+Carey_Mulligan 2
+David_Harbour 7
+Evan_Peters 5
+Yahya_Abdul 9
+Dakota_Johnson 6
+Lily_James 3
+John_Boyega 8
+Chadwick_Boseman 1
+Tessa_Thompson 4
+Pedro_Pascal 7
