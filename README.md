@@ -1,6 +1,6 @@
 # Como compilar?
 
-Para compilar o projeto, instale o compilador do Go aqui.
+Para compilar o projeto, instale o compilador do Go [aqui](https://go.dev/dl/).
 
 Depois, para executá-lo, é necessário acessar o diretório `src/` e executar:
 `go build`
