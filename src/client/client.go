@@ -144,6 +144,13 @@ func SearchRandomWalk(KEY string, NO *node.No, TTL string, Vizinhos []*node.Vizi
 
 	message := utils.GerarMensagemDeBusca(NO, TTL, "RW", KEY)
 
+	message_repeated := node.FindReceivedMessage(utils.GenerateStringSearchMessage(message), NO)
+
+	if !message_repeated {
+		msg := utils.GenerateStringSearchMessage(message)
+		node.AddMessage(msg, NO)
+	}
+
 	url := utils.GerarURLdeSearch(message, NO, NO.Vizinhos[random])
 
 	Consume_endpoint(url, NO, message, NO.Vizinhos[random])
@@ -158,6 +165,8 @@ func PrepareSearchInDepth(KEY string,
 
 	message := utils.GenerateStringSearchMessage(
 		utils.GerarMensagemDeBusca(NO, TTL, "BP", KEY))
+
+	node.AddMessage(message, NO)
 
 	node_address := NO.HOST + ":" + NO.PORT
 
