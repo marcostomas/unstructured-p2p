@@ -6,6 +6,7 @@ import (
 	"UP2P/server"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -115,6 +116,20 @@ func listarVizinhos(no *node.No) {
 
 }
 
+func calculaDesvioPadrao(array []int, mean float64) float64 {
+
+	square_sum := 0.0
+
+	for _, number := range array {
+		square_sum += math.Pow(float64(number)-mean, 2)
+	}
+
+	variancia := square_sum / float64(len(array)-1)
+
+	return math.Sqrt(variancia)
+
+}
+
 func showStatistics(no *node.No) {
 
 	fmt.Printf("Estatisticas\n")
@@ -131,9 +146,17 @@ func showStatistics(no *node.No) {
 	total_hops_random_walk := 0
 	total_hops_search_in_depth := 0
 
+	array_flooding := make([]int, 0)
+	array_random_walk := make([]int, 0)
+	array_search_in_depth := make([]int, 0)
+
 	mean_flooding := 0.0
 	mean_random_walk := 0.0
 	mean_search_in_depth := 0.0
+
+	standard_deviation_flooding := 0.0
+	standard_deviation_random_walk := 0.0
+	standard_deviation_search_in_depth := 0.0
 
 	//<ORIGIN> <SEQNO> <TTL> SEARCH <MODE> <LAST_HOP_PORT> <KEY> <HOP_COUNT>
 
@@ -162,12 +185,15 @@ func showStatistics(no *node.No) {
 			case "FL":
 				total_flooding_initialized++
 				total_hops_flooding += HOPS
+				array_flooding = append(array_flooding, HOPS)
 			case "RW":
 				total_random_walk_initialized++
 				total_hops_random_walk += HOPS
+				array_random_walk = append(array_random_walk, HOPS)
 			case "BP":
 				total_search_in_depth_initialized++
 				total_hops_search_in_depth += HOPS
+				array_search_in_depth = append(array_search_in_depth, HOPS)
 			}
 		}
 
@@ -177,12 +203,22 @@ func showStatistics(no *node.No) {
 	mean_random_walk = float64(total_hops_random_walk) / float64(total_random_walk_initialized)
 	mean_search_in_depth = float64(total_hops_search_in_depth) / float64(total_search_in_depth_initialized)
 
+	standard_deviation_flooding = calculaDesvioPadrao(array_flooding, mean_flooding)
+	standard_deviation_random_walk = calculaDesvioPadrao(array_random_walk, mean_random_walk)
+	standard_deviation_search_in_depth = calculaDesvioPadrao(array_search_in_depth, mean_search_in_depth)
+
 	fmt.Printf("\tTotal de mensagens de flooding vistas: %d\n", total_flooding)
 	fmt.Printf("\tTotal de mensagens de random walk vistas: %d\n", total_random_walk)
 	fmt.Printf("\tTotal de mensagens de busca em profundidade vistas: %d\n", total_search_in_depth)
-	fmt.Printf("\tMedia de saltos ate encontrar destino por flooding: %f\n", mean_flooding)
-	fmt.Printf("\tMedia de saltos ate encontrar destino por random walk: %f\n", mean_random_walk)
-	fmt.Printf("\tMedia de saltos ate encontrar destino por busca em profuncidade: %f\n", mean_search_in_depth)
+
+	fmt.Printf("\tMedia e desvio padrao de saltos ate encontrar destino por flooding: %f %f\n", mean_flooding,
+		standard_deviation_flooding)
+
+	fmt.Printf("\tMedia e desvio padrao de saltos ate encontrar destino por random walk: %f %f\n", mean_random_walk,
+		standard_deviation_random_walk)
+
+	fmt.Printf("\tMedia e desvio padrao de saltos ate encontrar destino por busca em profuncidade: %f %f\n", mean_search_in_depth,
+		standard_deviation_search_in_depth)
 
 }
 
